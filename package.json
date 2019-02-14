@@ -23,7 +23,7 @@
         "safe-buffer": "^5.1.2",
         "turtlecoin-cryptonote-util": "0.0.6",
         "turtlecoin-multi-hashing": "0.0.18",
-        "turtlecoin-utils": "0.0.2"
+        "turtlecoin-utils": "0.0.3"
     },
     "engines": {
         "node": ">=6"
