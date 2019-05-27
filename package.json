@@ -21,7 +21,7 @@
         "dateformat": "*",
         "redis": "*",
         "safe-buffer": "^5.1.2",
-        "turtlecoin-cryptonote-util": "0.0.6",
+        "turtlecoin-cryptonote-util": "0.0.7",
         "turtlecoin-multi-hashing": "0.0.19",
         "turtlecoin-utils": "0.0.13"
     },
