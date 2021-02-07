@@ -7,13 +7,17 @@
 [![Build Status](https://travis-ci.org/turtlecoin/node-turtle-pool.svg?branch=development)](https://travis-ci.org/turtlecoin/node-turtle-pool)
 
 
-turtle-pool (for NodeJS LTS)
+Derogold-pool (for NodeJS LTS)
 ====================
 Formerly known as cryptonote-forknote-pool, forked from Forknote Project.
 
 High performance Node.js (with native C addons) mining pool for Cryptonote based coins, created with the Forknote software such as Bytecoin, Dashcoin, etc..
 
 Comes with lightweight example front-end script which uses the pool's AJAX API.
+
+For DeroGold UPX needs the a few changes in the turtlecoin-cryptonote-util here (fix this permanently by forking the turtlecoin-cryptonot-util and point package.json to it later)
+turtlecoin-cryptonote-util/src/cryptonote_core/cryptonote_basic.h -> needs to be able to verify block MAJOR version 7, as we forked to V7 for the UPX algo change
+turtlecoin-cryptonote-util/src/cryptonote_config.h -> needs to have V7 major block version defined 
 
 #### Table of Contents
 * [Features](#features)
