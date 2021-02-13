@@ -22,7 +22,7 @@
         "dateformat": "*",
         "redis": "*",
         "safe-buffer": "^5.1.2",
-        "turtlecoin-cryptonote-util": "https://github.com/derogold/node-cryptonote-util",
+        "turtlecoin-cryptonote-util": "0.0.8",
         "turtlecoin-utils": "0.0.13",
         "wrkzcoin-multi-hashing": "0.0.19",
         "yarn": "^1.22.4"
