@@ -1,14 +1,15 @@
 {
-    "name": "turtle-pool",
-    "version": "0.0.18",
+    "name": "derogold-pool",
+    "version": "0.0.17",
     "license": "GPL-2.0",
     "authors": "Matthew Little",
     "contributors": [
-        "Brandon Lehmann <brandonlehmann@gmail.com>"
+        "Brandon Lehmann <brandonlehmann@gmail.com>",
+        "Leo Stehlik <leos.stehlik@gmail.com>"
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/turtlecoin/turtle-pool"
+        "url": "https://github.com/derogold/derogold-pool"
     },
     "scripts": {
         "test": "npm install && node tests/dependencyTests.js"
