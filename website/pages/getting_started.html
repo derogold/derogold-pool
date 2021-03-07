@@ -48,12 +48,12 @@
 </style>
 
 
-<h3>Testpool Connection Details</h3>
+<h3>Pool Connection Details</h3>
 <div class="stats">
     <div><i class="fa fa-cloud"></i> Mining Pool Address: <span id="miningPoolHost"></span></div>
 </div>
 
-<h4>Testpool Mining Ports</h4>
+<h4>Pool Mining Ports</h4>
 <div id="miningPorts" class="row">
     <div class="stats">
         <div><i class="fa fa-tachometer"></i> Port: <span class="miningPort"></span></div>
@@ -77,9 +77,9 @@
 
 <span style="display: none" id="exchangeMining">
 <hr>
-<h3>Mining to an exchange n/a</h3>
-<p>This pool does not support mining directly to an exchange!  <br>
-Why? It is a test pool. It does not pay any coins. You can still try it, but you'll be out of luck:e
+<h3>Mining to an exchange</h3>
+<p>This pool supports mining directly to an exchange!  <br>
+However, we do not recommend this.
 <code>EXCHANGE_WALLET_ADDRESS.payment_id</code> or use the integrated address if provided <code>INTEGRATED_ADDRESS</code> as your username, and when looking
 at your stats. The payment threshold for exchange addresses is <span id="paymentThreshold"></span>
 <hr>
@@ -90,16 +90,16 @@ at your stats. The payment threshold for exchange addresses is <span id="payment
 
 <hr>
 
-<h3>For <i class="fa fa-windows"></i> Windows users new to mining - outdated and not relevant for test pool</h3>
+<h3>For <i class="fa fa-windows"></i> Windows new miners: xmrig-upx</h3>
 <p class="getting_started_windows">
     You can <a class="btn btn-default btn-sm" target="_blank" id="easyminer_link"><i class="fa fa-download"></i> Download</a>
-    and run <a target="_blank" href="https://github.com/zone117x/cryptonote-easy-miner">cryptonote-easy-miner</a> <i class="fa fa-github"></i>
-    which will automatically generate your wallet address and run CPUMiner with the proper parameters.
+    and run <a target="_blank" href="https://github.com/uPlexa/xmrig-upx/releases/tag/v0.2.0">xmrig-upx</a> <i class="fa fa-github"></i>
+    
 </p>
 
 <hr>
 
-<h3>Mining Apps - outdated and not relevant. Just grab any mining softwar that supports UPX/2 algo</h3>
+<h3>Mining Apps</h3>
 <div class="yourStats table-responsive">
     <table class="table">
         <thead>
@@ -113,109 +113,44 @@ at your stats. The payment threshold for exchange addresses is <span id="payment
         </thead>
         <tbody id="mining_apps">
         <tr>
-            <td class="miningAppTitle">XMR-Stak-CPU (by fireice_uk)</td>
+            <td class="miningAppTitle">XMRIG-UPX CPU</td>
             <td>CPU</td>
-            <td><a target="_blank" href="https://github.com/fireice-uk/xmr-stak-cpu/releases">Github</a></td>
-            <td><a target="_blank" href="https://www.reddit.com/r/Monero/comments/5lsfgt/xmrstakcpu_high_performance_open_source_miner/">Reddit</a></td>
-            <td><a target="_blank" href="https://github.com/fireice-uk/xmr-stak-cpu">Github</a></td>
+            <td><a target="_blank" href="https://github.com/uPlexa/xmrig-upx/releases/tag/v0.2.0">Github</a></td>
+            <td><a target="_blank" href="_blank">Reddit</a></td>
+            <td><a target="_blank" href="https://github.com/uPlexa/xmrig-upx">Github</a></td>
         </tr>
         <tr>
             <td colspan="5">
                 <span>Example:</span>
-                <code>xmr-stak-cpu</code>
+                <code>xmrig-upx</code>
                 Please edit <code>config.txt</code> file to suit your needs.
             </td>
         </tr>
         <tr>
-            <td class="miningAppTitle">XMR-Stak-AMD (by fireice_uk)</td>
-            <td>OpenCL (AMD)</td>
-            <td><a target="_blank" href="https://github.com/fireice-uk/xmr-stak-amd/releases">Github</a></td>
-            <td><a target="_blank" href="https://www.reddit.com/r/Monero/comments/5prg4a/xmrstakamd_released/">Reddit</a></td>
-            <td><a target="_blank" href="https://github.com/fireice-uk/xmr-stak-amd">Github</a></td>
+            <td class="miningAppTitle">XMRigCC (by Bendr0id)</td>
+            <td>CPU</td>
+            <td><a target="_blank" href="https://github.com/Bendr0id/xmrigCC/releases">Github</a></td>
+            <td><a target="_blank" href="_blank">Reddit</a></td>
+            <td><a target="_blank" href="https://github.com/Bendr0id/xmrigCC/">Github</a></td>
         </tr>
         <tr>
             <td colspan="5">
                 <span>Example:</span>
-                <code>xmr-stak-amd</code>
+                <code>xmrig-cc</code>
                 Please edit <code>config.txt</code> file to suit your needs.
             </td>
         </tr>
         <tr>
-            <td class="miningAppTitle">CPUMiner (forked by LucasJones & Wolf)</td>
-            <td>CPU</td>
-            <td><a target="_blank" href="https://github.com/wolf9466/cpuminer-multi">Github</a></td>
-            <td><a target="_blank" href="https://bitcointalk.org/index.php?topic=632724">BitcoinTalk</a></td>
-            <td><a target="_blank" href="https://github.com/wolf9466/cpuminer-multi">Github</a></td>
+            <td class="miningAppTitle">Team Red Miner</td>
+            <td>GPU</td>
+            <td><a target="_blank" href="https://github.com/todxx/teamredminer/releases">Github</a></td>
+            <td><a target="_blank" href="_blank">BitcoinTalk</a></td>
+            <td><a target="_blank" href="https://github.com/todxx/teamredminer/">Github</a></td>
         </tr>
         <tr>
             <td colspan="5">
                 <span>Example:</span>
-                <code>minerd -a cryptonight -o stratum+tcp://<span class="exampleHost"></span>:<span class="examplePort"></span> -u <span class="exampleAddress">YOUR_WALLET_ADDRESS</span> -p x</code>
-            </td>
-        </tr>
-        <tr>
-            <td class="miningAppTitle">YAM Miner (by yvg1900)</td>
-            <td>CPU</td>
-            <td><a target="_blank" href="https://mega.co.nz/#F!h0tkXSxZ!f62uoUXogkxQmP2xO8Ib-g">MEGA</a></td>
-            <td><a target="_blank" href="https://twitter.com/yvg1900">Twitter</a></td>
-            <td>Proprietary <i class="fa fa-frown-o"></i></td>
-        </tr>
-        <tr>
-            <td colspan="5">
-                <span>Example:</span>
-                <code>yam -c x -M stratum+tcp://<span class="exampleAddress">YOUR_WALLET_ADDRESS</span>:x@<span class="exampleHost"></span>:<span class="examplePort"></span>/xmr</code>
-            </td>
-        </tr>
-        <tr>
-            <td class="miningAppTitle">Claymore CPU Miner</td>
-            <td>CPU</td>
-            <td><a target="_blank" href="https://mega.co.nz/#F!Hg4g1bLT!4Upg8GNiEZYCaZ04XVh_yg">MEGA</a></td>
-            <td><a target="_blank" href="https://bitcointalk.org/index.php?topic=647251.0">BitcoinTalk</a></td>
-            <td>Proprietary <i class="fa fa-frown-o"></i></td>
-        </tr>
-        <tr>
-            <td colspan="5">
-                <span>Example:</span>
-                <code>NsCpuCNMiner64 -o stratum+tcp://<span class="exampleHost"></span>:<span class="examplePort"></span> -u <span class="exampleAddress">YOUR_WALLET_ADDRESS</span> -p x</code>
-            </td>
-        </tr>
-        <tr>
-            <td class="miningAppTitle">Claymore GPU Miner</td>
-            <td>OpenCL (AMD)</td>
-            <td><a target="_blank" href="https://mega.co.nz/#F!e4JVEAIJ!l1iF4z10fMyJzY5-LnyC2A">MEGA</a></td>
-            <td><a target="_blank" href="https://bitcointalk.org/index.php?topic=638915.0">Discussion</a></td>
-            <td>Proprietary <i class="fa fa-frown-o"></i></td>
-        </tr>
-        <tr>
-            <td colspan="5">
-                <span>Example:</span>
-                <code>NsGpuCNMiner -o stratum+tcp://<span class="exampleHost"></span>:<span class="examplePort"></span> -u <span class="exampleAddress">YOUR_WALLET_ADDRESS</span> -p x</code>
-            </td>
-        </tr>
-        <tr>
-            <td class="miningAppTitle">ccminer (forked by tsiv)</td>
-            <td>CUDA (Nvidia)</td>
-            <td><a target="_blank" href="https://github.com/tsiv/ccminer-cryptonight/releases">Github</a></td>
-            <td><a target="_blank" href="https://bitcointalk.org/index.php?topic=656841.msg7487737#msg7487737">BitcoinTalk</a></td>
-            <td><a target="_blank" href="https://github.com/tsiv/ccminer-cryptonight">Github</a></td>
-        </tr>
-        <tr>
-            <td colspan="5">
-                <span>Example:</span>
-                <code>ccminer -o stratum+tcp://<span class="exampleHost"></span>:<span class="examplePort"></span> -u <span class="exampleAddress">YOUR_WALLET_ADDRESS</span> -p x</code>
-            </td>
-        </tr>
-        <tr>
-            <td class="miningAppTitle">xmrMiner</td>
-            <td>CUDA (Nvidia)</td>
-            <td><a target="_blank" href="https://github.com/xmrMiner/xmrMiner-Win64">Github</a></td>
-            <td><a target="_blank" href="https://forum.getmonero.org/13/mining-software-and-pools/87576/xmrminer-a-new-high-optimized-nvidia-gpu-miner">Forum</a></td>
-            <td><a target="_blank" href="https://github.com/xmrMiner/xmrMiner">Github</a></td>
-        </tr>
-        <tr>
-            <td colspan="5">
-                <span>Example:</span>
-                <code>xmrMiner_0.2.0.exe --url=stratum+tcp://<span class="exampleHost"></span>:<span class="examplePort"></span> -u <span class="exampleAddress">YOUR_WALLET_ADDRESS</span> -p x --bfactor=8 --bsleep=100</code>
+                <code>./teamredminer -a cnv8_upx2 -o stratum+tcp://<span class="exampleHost"></span>:<span class="examplePort"></span> -u <span class="exampleAddress">YOUR_WALLET_ADDRESS</span> -p x</code>
             </td>
         </tr>
         </tbody>
