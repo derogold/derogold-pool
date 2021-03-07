@@ -1,8 +1,8 @@
-var api = 'https://api.derogold4ever.online/api2/'
+var api = 'https://pool-cz.derogold4ever.online/api1/'
 
-var api_blockexplorer = 'http://cuveedego.czech.cloud:6969'
+var api_blockexplorer = ''
 
-var poolHost = 'api.derogold4ever.online'
+var poolHost = 'pool-cz.derogold4ever.online'
 
 var email = 'support@poolhost.com'
 
