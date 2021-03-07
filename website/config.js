@@ -1,4 +1,4 @@
-var api = 'https://pool-cz.derogold4ever.online/api1/'
+var api = ''
 
 var api_blockexplorer = ''
 
@@ -10,7 +10,7 @@ var api_blockexplorer = ''
 
 var cryptonatorWidget = ['{symbol}-BTC', '{symbol}-USD', '{symbol}-EUR']
 
-var easyminerDownload = 'https://github.com/zone117x/cryptonote-easy-miner/releases/'
+var easyminerDownload = 'https://github.com/uPlexa/xmrig-upx/releases'
 
 var blockchainExplorer = 'https:///{symbol}/block/{id}'
 
