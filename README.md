@@ -1,4 +1,4 @@
-![image](https://user-images.githubusercontent.com/34389545/35821974-62e0e25c-0a70-11e8-87dd-2cfffeb6ed47.png)
+<img src="https://i.imgur.com/4FlvRAt.png" width="200">
 
 #### Master Build Status
 [![Build Status](https://travis-ci.org/turtlecoin/node-turtle-pool.svg?branch=master)](https://travis-ci.org/turtlecoin/node-turtle-pool)
