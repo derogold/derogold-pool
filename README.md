@@ -1,11 +1,5 @@
 <img src="https://i.imgur.com/4FlvRAt.png" width="200">
 
-#### Master Build Status
-[![Build Status](https://travis-ci.org/turtlecoin/node-turtle-pool.svg?branch=master)](https://travis-ci.org/turtlecoin/node-turtle-pool)
-
-#### Development Build Status
-[![Build Status](https://travis-ci.org/turtlecoin/node-turtle-pool.svg?branch=development)](https://travis-ci.org/turtlecoin/node-turtle-pool)
-
 
 Derogold-pool (for NodeJS LTS)
 ====================
@@ -15,9 +9,7 @@ High performance Node.js (with native C addons) mining pool for Cryptonote based
 
 Comes with lightweight example front-end script which uses the pool's AJAX API.
 
-For DeroGold UPX needs the a few changes in the turtlecoin-cryptonote-util here (fix this permanently by forking the turtlecoin-cryptonot-util and point package.json to it later)
-turtlecoin-cryptonote-util/src/cryptonote_core/cryptonote_basic.h -> needs to be able to verify block MAJOR version 7, as we forked to V7 for the UPX algo change
-turtlecoin-cryptonote-util/src/cryptonote_config.h -> needs to have V7 major block version defined 
+This version is ready for the upcomming DeroGold hard-fork to the cn-upx/2 algo. 
 
 #### Table of Contents
 * [Features](#features)
@@ -89,19 +81,18 @@ turtlecoin-cryptonote-util/src/cryptonote_config.h -> needs to have V7 major blo
 * [CryptoNote Forum](https://forum.cryptonote.org/)
 * [CryptoNote Universal Pool Forum](https://bitcointalk.org/index.php?topic=705509)
 * [Forknote](https://forknote.net)
-* [TurtleCoin](http://chat.turtlecoin.lol)
+* [DeroGold](https://discordapp.com/invite/j2aSNFn)
 
 #### Pools Using This Software
 
-* http://democats.org
-* http://cryptonotepool.com/
+* https://pool-cz.derogold4ever.online
 
 Usage
 ===
 
 #### Requirements
-* Turtlecoind daemon
-* turtle-service
+* DeroGoldd daemon
+* DeroGold-service
 * [Node.js](http://nodejs.org/) LTS (6,8,10) ([follow these installation instructions](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions))
 * [Redis](http://redis.io/) key-value store v2.6+ ([follow these instructions](http://redis.io/topics/quickstart))
 * libssl required for the node-multi-hashing module
@@ -122,12 +113,12 @@ Those are legitimate requirements. If you use old versions of Node.js or Redis t
 include `bind 127.0.0.1` in your `redis.conf` file. Also it's a good idea to learn about and understand software that
 you are using - a good place to start with redis is [data persistence](http://redis.io/topics/persistence).
 
-##### Easy install on Ubuntu 14 LTS
+##### Easy install on Ubuntu LTS
 
 Installing pool on different Linux distributives is different because it depends on system default components and versions. For now the easiest way to install pool is to use Ubuntu 14 LTS. Thus, all you had to do in order to prepare Ubuntu 14 for pool installation is to run:
 
 ```bash
-sudo apt-get install -y git build-essential redis-server libboost1.55-all-dev cmake libssl-dev node-gyp
+sudo apt-get install -y git build-essential redis-server libboost1.69-all-dev cmake libssl-dev node-gyp
 ```
 
 ##### Debian 9 installation
@@ -149,17 +140,17 @@ sudo apt-get install -y nodejs
 
 I have found using a screen session to keep everything running on the server works well.
 
-Grab your most recent TurtleCoin release (https://github.com/turtlecoin/turtlecoin/releases/) then launch your daemon and sync your chain.
+Grab your most recent DeroGold release (https://github.com/derogold/derogold/releases/) then launch your daemon and sync your chain.
 
-Once your daemon is synced with the network start your turtle-service and redis-server.
+Once your daemon is synced with the network start your DeroGold-service and redis-server.
 
 #### 1) Downloading & Installing
 
 Clone the repository and run `npm install` for all the dependencies to be installed:
 
 ```bash
-git clone https://github.com/turtlecoin/turtle-pool turtle-pool
-cd turtle-pool
+git clone https://github.com/derogold/derogold-pool.git derogold-pool
+cd derogold-pool
 npm install && npm test
 ```
 
@@ -582,7 +573,7 @@ Credits
 * [Wolf0](https://bitcointalk.org/index.php?action=profile;u=80740) - Helped try to deobfuscate some of the daemon code for getting a bug fixed
 * [Tacotime](https://bitcointalk.org/index.php?action=profile;u=19270) - helping with figuring out certain problems and lead the bounty for this project's creation
 * [fancoder](https://github.com/fancoder/) - See his repo for the changes
-* [TurtleCoin](https://github.com/turtlecoin/) - For making this great again
+* [DeroGold](https://github.com/derogold) - DeroGold GitHub repositories
 
 License
 -------
