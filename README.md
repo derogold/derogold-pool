@@ -573,6 +573,7 @@ Credits
 * [Wolf0](https://bitcointalk.org/index.php?action=profile;u=80740) - Helped try to deobfuscate some of the daemon code for getting a bug fixed
 * [Tacotime](https://bitcointalk.org/index.php?action=profile;u=19270) - helping with figuring out certain problems and lead the bounty for this project's creation
 * [fancoder](https://github.com/fancoder/) - See his repo for the changes
+* [TurtleCoin](https://github.com/turtlecoin) - The home of where our journey started
 * [DeroGold](https://github.com/derogold) - DeroGold GitHub repositories
 
 License
