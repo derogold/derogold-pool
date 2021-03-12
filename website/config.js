@@ -1,4 +1,4 @@
-var api = ''
+var api = 'https://pool-cz.derogold4ever.online/api1/'
 
 var api_blockexplorer = ''
 
@@ -8,9 +8,9 @@ var email = 'support@poolhost.com'
 
 var api_blockexplorer = ''
 
-var cryptonatorWidget = ['{symbol}-BTC', '{symbol}-USD', '{symbol}-EUR']
+var cryptonatorWidget = ['', '{symbol}-USD', '{symbol}-EUR']
 
-var easyminerDownload = 'https://github.com/uPlexa/xmrig-upx/releases'
+var easyminerDownload = 'https://github.com/uPlexa/xmrig-upx/releases/tag/v0.2.0'
 
 var blockchainExplorer = 'https:///{symbol}/block/{id}'
 
