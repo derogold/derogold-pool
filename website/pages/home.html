@@ -103,31 +103,16 @@
         <div><i class="fa fa-money"></i> Total Pool Fee: <span id="poolFee"></span></div>
         <div><i class="fa fa-history"></i> Block Found Every: <span id="blockSolvedTime"></span> (est.)</div>
     </div>
-
-    <div class="col-md-4 stats marketRate">
+    <div class="col-md-4 stats marketRate" style="display: block;">
         <h3 id="marketHeader">Market</h3>
-        <div class="marketFooter">Updated: <span id="marketLastUpdated"></span></div>
-        <div class="marketFooter">Powered by <a href="https://www.cryptonator.com/">Cryptonator</a></div>
+      <iframe src="https://coinpaprika.com/coin/dego-derogold/embed/?interval=30m&amp;modules[]=market_details&amp;nightMode=true&amp;primaryCurrency=USD&amp;updateActive=true" width="350" height="270" frameborder="0"></iframe>
+
     </div>
 </div>
 
 <!-- <hr> -->
 
 <div class="row chartsPoolStat">
-    <div class="col-sm-2 chartWrap">
-        <h4>Hash/USD <span data-toggle="tooltip" data-placement="top" data-original-title="Reward * Rate / Difficulty"><i class="fa fa-question-circle"></i></span></h4>
-        <div id="chartHashUsd" data-chart="profit">
-            <div class="chart"></div>
-            <!-- <p class="text-center" id="cur_profit">-</p> -->
-        </div>
-    </div>
-    <div class="col-sm-20 chartWrap">
-        <h4>Price in USD</h4>
-        <div id="chartPriceUsd" data-chart="price">
-            <div class="chart"></div>
-            <!-- <p class="text-center" id="cur_price">-</p> -->
-        </div>
-    </div>
     <div class="col-sm-20 chartWrap">
         <h4>Difficulty</h4>
         <div id="chartDifficulty" data-chart="diff">
