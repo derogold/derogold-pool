@@ -15,13 +15,16 @@
         "test": "npm install && node tests/dependencyTests.js"
     },
     "dependencies": {
-        "async": "1",
+        "async": "^1.5.2",
         "base58-native": "*",
         "bignum": "*",
+        "cjs": "0.0.11",
         "cli-color": "^1.4.0",
-        "cryptonight-hashing": "git://github.com/uPlexa/node-cryptonight-hashing",
-        "dateformat": "*",
-        "redis": ">=3.1.1",
+        "cryptonight-hashing": "git+https://github.com/uPlexa/node-cryptonight-hashing.git",
+        "dateformat": "^4.0.0",
+        "loader": "^2.1.1",
+        "promise": "^8.3.0",
+        "redis": "^3.1.1",
         "safe-buffer": "^5.1.2",
         "turtlecoin-cryptonote-util": "0.0.8",
         "turtlecoin-utils": "0.0.13",
@@ -29,7 +32,7 @@
         "yarn": "^1.22.4"
     },
     "engines": {
-        "node": ">=6"
+        "node": ">=10"
     },
     "standard": {
         "ignore": [
