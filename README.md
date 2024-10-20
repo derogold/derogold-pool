@@ -118,7 +118,7 @@ you are using - a good place to start with redis is [data persistence](http://re
 Installing pool on different Linux distributives is different because it depends on system default components and versions. For now the easiest way to install pool is to use Ubuntu 14 LTS. Thus, all you had to do in order to prepare Ubuntu 14 for pool installation is to run:
 
 ```bash
-sudo apt-get install -y git build-essential redis-server libboost1.69-all-dev cmake libssl-dev node-gyp
+sudo apt-get install -y git build-essential redis-server libboost-all-dev cmake libssl-dev node-gyp
 ```
 
 ##### Debian 9 installation
@@ -127,7 +127,7 @@ These are the steps taken to install pool on Debian 9.  These steps will also wo
 ```bash
 sudo apt-get install -y git curl wget screen build-essential redis-server libboost-all-dev cmake libssl-dev node-gyp
 ```
-I have currently tested this on Node 8.11.1 and 8.12.0.
+I have currently tested this on Node 10.24.1.
 
 You can install node here: (https://nodejs.org/en/download/package-manager/)
 
