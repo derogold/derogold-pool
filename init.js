@@ -33,6 +33,26 @@ const singleModule = (function () {
 
   await global.redisClient.connect()
 
+  // redis v4 dropped the multi(commands_array) constructor form from v3.
+  // Patch it back so existing call sites don't need to change.
+  const _nativeMulti = global.redisClient.multi.bind(global.redisClient)
+  global.redisClient.multi = function (commands) {
+    const m = _nativeMulti()
+    if (Array.isArray(commands)) {
+      for (const [cmd, ...args] of commands) {
+        const upperCmd = cmd.toUpperCase()
+        if (typeof m[upperCmd] === 'function') {
+          m[upperCmd](...args)
+        } else {
+          // Fall back to raw protocol for deprecated commands removed from the
+          // JS client but still supported by the Redis server (e.g. ZREVRANGE)
+          m.addCommand([upperCmd, ...args.map(String)])
+        }
+      }
+    }
+    return m
+  }
+
   if (cluster.isWorker) {
     switch (process.env.workerType) {
       case 'pool':
