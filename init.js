@@ -1,52 +1,62 @@
-var cluster = require('cluster')
-var os = require('os')
-var redis = require('redis')
+const cluster = require('cluster')
+const os = require('os')
+const redis = require('redis')
 
 require('./lib/configReader.js')
 require('./lib/logger.js')
-global.redisClient = redis.createClient(global.config.redis.port, global.config.redis.host)
 
-if (cluster.isWorker) {
-  switch (process.env.workerType) {
-    case 'pool':
-      require('./lib/pool.js')
-      break
-    case 'blockUnlocker':
-      require('./lib/blockUnlocker.js')
-      break
-    case 'paymentProcessor':
-      require('./lib/paymentProcessor.js')
-      break
-    case 'api':
-      require('./lib/api.js')
-      break
-    case 'cli':
-      require('./lib/cli.js')
-      break
-    case 'chartsDataCollector':
-      require('./lib/chartsDataCollector.js')
-      break
-  }
-}
-
-var logSystem = 'master'
+const logSystem = 'master'
 require('./lib/exceptionWriter.js')(logSystem)
 
-var singleModule = (function () {
-  var validModules = ['pool', 'api', 'unlocker', 'payments', 'chartsDataCollector']
+const singleModule = (function () {
+  const validModules = ['pool', 'api', 'unlocker', 'payments', 'chartsDataCollector']
 
-  for (var i = 0; i < process.argv.length; i++) {
+  for (let i = 0; i < process.argv.length; i++) {
     if (process.argv[i].indexOf('-module=') === 0) {
-      var moduleName = process.argv[i].split('=')[1]
+      const moduleName = process.argv[i].split('=')[1]
       if (validModules.indexOf(moduleName) > -1) { return moduleName }
 
       global.log('error', logSystem, 'Invalid module "%s", valid modules: %s', [moduleName, validModules.join(', ')])
       process.exit()
     }
   }
-})();
+})()
 
-(function init () {
+;(async function () {
+  global.redisClient = redis.createClient({
+    socket: {
+      host: global.config.redis.host,
+      port: global.config.redis.port
+    },
+    legacyMode: true
+  })
+
+  await global.redisClient.connect()
+
+  if (cluster.isWorker) {
+    switch (process.env.workerType) {
+      case 'pool':
+        require('./lib/pool.js')
+        break
+      case 'blockUnlocker':
+        require('./lib/blockUnlocker.js')
+        break
+      case 'paymentProcessor':
+        require('./lib/paymentProcessor.js')
+        break
+      case 'api':
+        require('./lib/api.js')
+        break
+      case 'cli':
+        require('./lib/cli.js')
+        break
+      case 'chartsDataCollector':
+        require('./lib/chartsDataCollector.js')
+        break
+    }
+    return
+  }
+
   checkRedisVersion(function () {
     if (singleModule) {
       global.log('info', logSystem, 'Running in single module mode: %s', [singleModule])
@@ -86,12 +96,12 @@ function checkRedisVersion (callback) {
       global.log('error', logSystem, 'Redis version check failed')
       return
     }
-    var parts = response.split('\r\n')
-    var version
-    var versionString
-    for (var i = 0; i < parts.length; i++) {
+    const parts = response.split('\r\n')
+    let version
+    let versionString
+    for (let i = 0; i < parts.length; i++) {
       if (parts[i].indexOf(':') !== -1) {
-        var valParts = parts[i].split(':')
+        const valParts = parts[i].split(':')
         if (valParts[0] === 'redis_version') {
           versionString = valParts[1]
           version = parseFloat(versionString)
@@ -118,18 +128,18 @@ function spawnPoolWorkers () {
     return
   }
 
-  var numForks = (function () {
+  const numForks = (function () {
     if (!global.config.poolServer.clusterForks) { return 1 }
     if (global.config.poolServer.clusterForks === 'auto') { return os.cpus().length }
     if (isNaN(global.config.poolServer.clusterForks)) { return 1 }
     return global.config.poolServer.clusterForks
   })()
 
-  var poolWorkers = {}
+  const poolWorkers = {}
 
-  if (!cluster.isMaster) return
-  var createPoolWorker = function (forkId) {
-    var worker = cluster.fork({
+  if (!cluster.isPrimary) return
+  const createPoolWorker = function (forkId) {
+    const worker = cluster.fork({
       workerType: 'pool',
       forkId: forkId
     })
@@ -161,8 +171,8 @@ function spawnPoolWorkers () {
     })
   }
 
-  var i = 1
-  var spawnInterval = setInterval(function () {
+  let i = 1
+  const spawnInterval = setInterval(function () {
     createPoolWorker(i.toString())
     i++
     if (i - 1 === numForks) {
@@ -175,8 +185,8 @@ function spawnPoolWorkers () {
 function spawnBlockUnlocker () {
   if (!global.config.blockUnlocker || !global.config.blockUnlocker.enabled) return
 
-  if (!cluster.isMaster) return
-  var worker = cluster.fork({
+  if (!cluster.isPrimary) return
+  const worker = cluster.fork({
     workerType: 'blockUnlocker'
   })
   worker.on('exit', function (code, signal) {
@@ -190,8 +200,8 @@ function spawnBlockUnlocker () {
 function spawnPaymentProcessor () {
   if (!global.config.payments || !global.config.payments.enabled) return
 
-  if (!cluster.isMaster) return
-  var worker = cluster.fork({
+  if (!cluster.isPrimary) return
+  const worker = cluster.fork({
     workerType: 'paymentProcessor'
   })
   worker.on('exit', function (code, signal) {
@@ -205,8 +215,8 @@ function spawnPaymentProcessor () {
 function spawnApi () {
   if (!global.config.api || !global.config.api.enabled) return
 
-  if (!cluster.isMaster) return
-  var worker = cluster.fork({
+  if (!cluster.isPrimary) return
+  const worker = cluster.fork({
     workerType: 'api'
   })
   worker.on('exit', function (code, signal) {
@@ -224,8 +234,8 @@ function spawnCli () {
 function spawnChartsDataCollector () {
   if (!global.config.charts) return
 
-  if (!cluster.isMaster) return
-  var worker = cluster.fork({
+  if (!cluster.isPrimary) return
+  const worker = cluster.fork({
     workerType: 'chartsDataCollector'
   })
   worker.on('exit', function (code, signal) {

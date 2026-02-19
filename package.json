@@ -12,27 +12,21 @@
         "url": "https://github.com/derogold/derogold-pool"
     },
     "scripts": {
-        "test": "npm install && node tests/dependencyTests.js"
+        "patch-addons": "node scripts/patch-native-addons.js",
+        "test": "npm install --ignore-scripts && node scripts/patch-native-addons.js && node tests/dependencyTests.js"
     },
     "dependencies": {
-        "async": "^1.5.2",
-        "base58-native": "*",
-        "bignum": "*",
-        "cjs": "0.0.11",
-        "cli-color": "^1.4.0",
+        "async": "^3.2.6",
+        "cli-color": "^2.0.0",
         "cryptonight-hashing": "git+https://github.com/uPlexa/node-cryptonight-hashing.git",
         "dateformat": "^4.0.0",
-        "loader": "^2.1.1",
-        "promise": "^8.3.0",
-        "redis": "^3.1.1",
-        "safe-buffer": "^5.1.2",
+        "redis": "^4.7.0",
         "turtlecoin-cryptonote-util": "0.0.8",
         "turtlecoin-utils": "0.0.13",
-        "wrkzcoin-multi-hashing": "0.0.19",
-        "yarn": "^1.22.4"
+        "wrkzcoin-multi-hashing": "^0.0.19"
     },
     "engines": {
-        "node": ">=10"
+        "node": ">=22"
     },
     "standard": {
         "ignore": [
