@@ -18,12 +18,12 @@
     "dependencies": {
         "async": "^3.2.6",
         "cli-color": "^2.0.0",
-        "cryptonight-hashing": "git+https://github.com/uPlexa/node-cryptonight-hashing.git",
+        "@leocuvee/cryptonight-hashing": "^9.0.2",
         "dateformat": "^4.0.0",
         "redis": "^4.7.0",
-        "turtlecoin-cryptonote-util": "0.0.8",
+        "@leocuvee/turtlecoin-cryptonote-util": "0.1.0",
         "turtlecoin-utils": "0.0.13",
-        "wrkzcoin-multi-hashing": "^0.0.19"
+        "@leocuvee/wrkzcoin-multi-hashing": "^0.0.20"
     },
     "engines": {
         "node": ">=22"
