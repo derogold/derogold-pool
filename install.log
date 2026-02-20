@@ -1,0 +1,18 @@
+npm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: 'derogold-pool@0.0.17',
+npm warn EBADENGINE   required: { node: '>=22' },
+npm warn EBADENGINE   current: { node: 'v18.20.3', npm: '10.7.0' }
+npm warn EBADENGINE }
+npm warn deprecated npmlog@4.1.2: This package is no longer supported.
+npm warn deprecated are-we-there-yet@1.1.7: This package is no longer supported.
+npm warn deprecated prebuild-install@5.3.6: No longer maintained. Please contact the author of the relevant native addon; alternatives are available.
+npm warn deprecated gauge@2.7.4: This package is no longer supported.
+npm warn deprecated turtlecoin-utils@0.0.13: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+npm warn deprecated turtlecoin-crypto@1.0.0: No longer supported. Project has closed
+
+added 105 packages, and audited 106 packages in 1m
+
+7 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
