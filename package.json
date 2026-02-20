@@ -22,7 +22,7 @@
         "dateformat": "^4.0.0",
         "redis": "^4.7.0",
         "turtlecoin-cryptonote-util": "npm:@leocuvee/turtlecoin-cryptonote-util@0.1.0",
-        "turtlecoin-utils": "0.0.13",
+        "turtlecoin-utils": "npm:@leocuvee/turtlecoin-utils@0.1 1",
         "wrkzcoin-multi-hashing": "npm:@leocuvee/wrkzcoin-multi-hashing@0.0.21"
     },
     "engines": {
