@@ -18,12 +18,12 @@
     "dependencies": {
         "async": "^3.2.6",
         "cli-color": "^2.0.0",
-        "cryptonight-hashing": "npm:@leocuvee/cryptonight-hashing@9.0.2",
+        "cryptonight-hashing": "npm:@leocuvee/cryptonight-hashing@9.0.3",
         "dateformat": "^4.0.0",
         "redis": "^4.7.0",
         "turtlecoin-cryptonote-util": "npm:@leocuvee/turtlecoin-cryptonote-util@0.1.0",
         "turtlecoin-utils": "0.0.13",
-        "wrkzcoin-multi-hashing": "npm:@leocuvee/wrkzcoin-multi-hashing@0.0.20"
+        "wrkzcoin-multi-hashing": "npm:@leocuvee/wrkzcoin-multi-hashing@0.0.21"
     },
     "engines": {
         "node": ">=22"
