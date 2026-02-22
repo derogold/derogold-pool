@@ -87,7 +87,8 @@
     "minPayment": 10000000,
     "minPaymentIdPayment": 10000000,
     "maxTransactionAmount": 1000000000,
-    "denomination": 100
+    "denomination": 100,
+    "mixin": 1
   },
   "blockUnlocker": {
     "enabled": true,
