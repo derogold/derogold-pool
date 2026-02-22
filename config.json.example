@@ -117,7 +117,9 @@
     "port": 1337,
     "password": "YOUR_WALLET_API_PASSWORD",
     "filename": "/path/to/your/wallet.wallet",
-    "walletPassword": "YOUR_WALLET_FILE_PASSWORD"
+    "walletPassword": "YOUR_WALLET_FILE_PASSWORD",
+    "daemonHost": "127.0.0.1",
+    "daemonPort": 7979
   },
   "redis": {
     "host": "127.0.0.1",
