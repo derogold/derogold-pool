@@ -1,12 +1,10 @@
 var api = 'https://pool-cz.derogold4ever.online/api1/'
 
-var api_blockexplorer = ''
+var api_blockexplorer = 'https://api.derogold.online/apimine'
 
 var poolHost = 'pool-cz.derogold4ever.online'
 
 var email = 'support@poolhost.com'
-
-var api_blockexplorer = ''
 
 var cryptonatorWidget = ['', '{symbol}-USD', '{symbol}-EUR']
 
