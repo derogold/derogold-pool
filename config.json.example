@@ -17,7 +17,7 @@
   "poolServer": {
     "enabled": true,
     "clusterForks": "auto",
-    "poolAddress": "dg3xXNwkhKBWmwdtwHTT5eCngwg5zC7jgJZ2QipkyhkEE2k5Q9sjTwpKiyMgEfPJKbi5JtNc6C4j6X9JxRz9YTH62jFqzkZRp",
+    "poolAddress": "YOUR_POOL_WALLET_ADDRESS",
     "blockRefreshInterval": 1000,
     "minerTimeout": 3600,
     "ports": [
@@ -39,11 +39,11 @@
     ],
     "varDiff": {
       "minDiff": 100,
-      "maxDiff": 500000,
+      "maxDiff": 9000000,
       "targetTime": 10,
       "retargetTime": 30,
       "variancePercent": 30,
-      "maxJump": 100
+      "maxJump": 10000
     },
     "fixedDiff": {
       "enabled": true,
@@ -82,21 +82,21 @@
     "enabled": true,
     "allowPaymentId": true,
     "interval": 120,
-    "maxAddresses": 50,
-    "transferFee": 100,
-    "minPayment": 100000,
+    "maxAddresses": 2,
+    "transferFee": 10000,
+    "minPayment": 10000000,
     "minPaymentIdPayment": 10000000,
-    "maxTransactionAmount": 0,
+    "maxTransactionAmount": 1000000000,
     "denomination": 100
   },
   "blockUnlocker": {
     "enabled": true,
     "interval": 30,
     "depth": 40,
-    "poolFee": 2,
-    "devDonation": 0.1,
-    "coreDevDonation": 0.1,
-    "extraFeaturesDevDonation": 0.1
+    "poolFee": 1,
+    "devDonation": 0,
+    "coreDevDonation": 0,
+    "extraFeaturesDevDonation": 0
   },
   "api": {
     "enabled": true,
@@ -106,7 +106,7 @@
     "port": 8117,
     "blocks": 30,
     "payments": 30,
-    "password": "your_password"
+    "password": "YOUR_API_PASSWORD"
   },
   "daemon": {
     "host": "127.0.0.1",
@@ -114,10 +114,10 @@
   },
   "wallet": {
     "host": "127.0.0.1",
-    "port": 8070,
-    "password": "<replace with rpc password>",
-    "filename": "/path/to/wallet.wallet",
-    "walletPassword": "your-wallet-file-password"
+    "port": 1337,
+    "password": "YOUR_WALLET_API_PASSWORD",
+    "filename": "/path/to/your/wallet.wallet",
+    "walletPassword": "YOUR_WALLET_FILE_PASSWORD"
   },
   "redis": {
     "host": "127.0.0.1",
@@ -145,7 +145,7 @@
         "enabled": true,
         "updateInterval": 60,
         "stepInterval": 1800,
-        "maximumPeriod": 86400
+        "maximumPeriod": 604800
       },
       "difficulty": {
         "enabled": true,
