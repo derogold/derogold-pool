@@ -18,7 +18,7 @@ they are when starting the pool with `node init.js`.
    ```
 
 2. Make sure Redis, the daemon, and wallet API are running on their configured
-   ports (`6379`, `7979`, and `1337` by default). On Linux, Compose uses host
+   ports (`6379`, `6969`, and `1337` by default). On Linux, Compose uses host
    networking so services listening only on `127.0.0.1` remain reachable.
 
 3. Build and start the pool and Redis:
