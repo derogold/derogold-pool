@@ -4,39 +4,17 @@ services:
       context: .
     init: true
     restart: unless-stopped
-    depends_on:
-      redis:
-        condition: service_healthy
+    # The daemon, wallet API, and Redis already run on host loopback. Host
+    # networking gives the container the same connectivity as `node init.js`.
+    network_mode: host
     environment:
-      REDIS_HOST: redis
-      API_HOST: 0.0.0.0
-      # The defaults below reach daemon/wallet processes running on this host.
-      DAEMON_HOST: host.docker.internal
-      WALLET_HOST: host.docker.internal
-      WALLET_DAEMON_HOST: host.docker.internal
-    extra_hosts:
-      - host.docker.internal:host-gateway
+      REDIS_HOST: 127.0.0.1
+      DAEMON_HOST: 127.0.0.1
+      WALLET_HOST: 127.0.0.1
+      WALLET_DAEMON_HOST: 127.0.0.1
     volumes:
       - ./config.json:/config/config.json:ro
       - pool-logs:/app/logs
-    ports:
-      - "8117:8117"
-      - "3333:3333"
-      - "5555:5555"
-      - "7777:7777"
-
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    command: redis-server --appendonly yes
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-    volumes:
-      - redis-data:/data
 
 volumes:
   pool-logs:
-  redis-data:
