@@ -5,6 +5,93 @@ Derogold-pool (for NodeJS LTS)
 ====================
 Formerly known as cryptonote-forknote-pool, forked from Forknote Project.
 
+### Run locally with Docker
+
+The Compose setup runs the pool on Node.js 22 and provides its Redis service.
+The DeroGold daemon and wallet API are expected to already be running on the
+Docker host, just as they are when starting the pool with `node init.js`.
+
+1. Create and edit the local configuration if it does not exist:
+
+   ```bash
+   cp config.json.example config.json
+   ```
+
+2. Make sure the daemon and wallet API listen on an address reachable from
+   Docker (not only `127.0.0.1`). Their configured ports remain `7979` and
+   `1337` by default.
+
+3. Build and start the pool and Redis:
+
+   ```bash
+   docker compose up --build -d
+   ```
+
+#### Docker Compose commands
+
+Show the current container state and published ports:
+
+```bash
+docker compose ps
+```
+
+Follow the pool logs. Press `Ctrl+C` to stop following the output; this does
+not stop the containers:
+
+```bash
+docker compose logs -f pool
+```
+
+Show the most recent pool and Redis logs without following them:
+
+```bash
+docker compose logs --tail=100 pool redis
+```
+
+Restart the pool after changing `config.json`:
+
+```bash
+docker compose restart pool
+```
+
+Rebuild and recreate the pool after changing source code, dependencies, or the
+Dockerfile:
+
+```bash
+docker compose up --build -d
+```
+
+Stop and remove the containers and network while keeping Redis data and pool
+logs:
+
+```bash
+docker compose down
+```
+
+Start the existing containers again:
+
+```bash
+docker compose up -d
+```
+
+Redis data and pool logs are kept in named Docker volumes. To stop the stack
+and permanently delete those volumes as well, use:
+
+```bash
+docker compose down -v
+```
+
+The `-v` command deletes stored pool data, so only use it when that is
+intentional.
+
+Compose overrides the config's Redis host with `redis`, publishes the API on
+port `8117`, and publishes mining ports `3333`, `5555`, and `7777`. Remove
+unused port mappings or add any extra ports configured under
+`poolServer.ports`. The environment variables `REDIS_HOST`, `REDIS_PORT`,
+`DAEMON_HOST`, `DAEMON_PORT`, `WALLET_HOST`, `WALLET_PORT`,
+`WALLET_DAEMON_HOST`, `WALLET_DAEMON_PORT`, `API_HOST`, and `API_PORT` can
+override the corresponding JSON values.
+
 High performance Node.js (with native C addons) mining pool for Cryptonote based coins, created with the Forknote software such as Bytecoin, Dashcoin, etc..
 
 Comes with lightweight example front-end script which uses the pool's AJAX API.

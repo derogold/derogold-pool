@@ -95,12 +95,25 @@ rebuild('wrkzcoin-multi-hashing')
 
 // ---------------------------------------------------------------------------
 // turtlecoin-cryptonote-util
-// Fixes: C++ standard (c++0x → c++14).  c++17 breaks binary_archive.h.
+// Fixes: C++17 is required by the V8 headers shipped with current Node 22.
 // ---------------------------------------------------------------------------
 console.log('\n[turtlecoin-cryptonote-util]')
 patchFile(path.join(nm, 'turtlecoin-cryptonote-util', 'binding.gyp'), [
-  ['-std=c++0x', '-std=c++14']
+  ['-std=c++0x', '-std=c++17'],
+  ['-std=c++14', '-std=c++17']
 ])
+patchFile(
+  path.join(
+    nm,
+    'turtlecoin-cryptonote-util',
+    'src',
+    'serialization',
+    'binary_archive.h'
+  ),
+  [
+    ['stream_type::streampos pos', 'std::streampos pos']
+  ]
+)
 rebuild('turtlecoin-cryptonote-util')
 
 // ---------------------------------------------------------------------------

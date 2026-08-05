@@ -1,0 +1,11 @@
+.git
+.gitignore
+node_modules
+build
+logs
+config.json
+*.log
+*.wallet
+wallet-api
+npm-debug.log
+.idea
