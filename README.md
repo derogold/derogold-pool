@@ -7,9 +7,9 @@ Formerly known as cryptonote-forknote-pool, forked from Forknote Project.
 
 ### Run locally with Docker
 
-The Compose setup runs the pool on Node.js 22. Redis, the DeroGold daemon, and
-the wallet API are expected to already be running on the Docker host, just as
-they are when starting the pool with `node init.js`.
+The Compose setup runs the pool on Node.js 22 and provides its Redis service.
+The DeroGold daemon and wallet API are expected to already be running on the
+Docker host, just as they are when starting the pool with `node init.js`.
 
 1. Create and edit the local configuration if it does not exist:
 
@@ -17,9 +17,9 @@ they are when starting the pool with `node init.js`.
    cp config.json.example config.json
    ```
 
-2. Make sure Redis, the daemon, and wallet API are running on their configured
-   ports (`6379`, `7979`, and `1337` by default). On Linux, Compose uses host
-   networking so services listening only on `127.0.0.1` remain reachable.
+2. Make sure the daemon and wallet API listen on an address reachable from
+   Docker (not only `127.0.0.1`). Their configured ports remain `7979` and
+   `1337` by default.
 
 3. Build and start the pool and Redis:
 
@@ -42,10 +42,10 @@ not stop the containers:
 docker compose logs -f pool
 ```
 
-Show the most recent pool logs without following them:
+Show the most recent pool and Redis logs without following them:
 
 ```bash
-docker compose logs --tail=100 pool
+docker compose logs --tail=100 pool redis
 ```
 
 Restart the pool after changing `config.json`:
@@ -74,8 +74,8 @@ Start the existing containers again:
 docker compose up -d
 ```
 
-Pool logs are kept in a named Docker volume. To stop the stack and permanently
-delete that volume as well, use:
+Redis data and pool logs are kept in named Docker volumes. To stop the stack
+and permanently delete those volumes as well, use:
 
 ```bash
 docker compose down -v
@@ -84,9 +84,10 @@ docker compose down -v
 The `-v` command deletes stored pool data, so only use it when that is
 intentional.
 
-With host networking, the API and configured mining ports bind directly on the
-Docker host. The defaults are API port `8117` and mining ports `3333`, `5555`,
-and `7777`. The environment variables `REDIS_HOST`, `REDIS_PORT`,
+Compose overrides the config's Redis host with `redis`, publishes the API on
+port `8117`, and publishes mining ports `3333`, `5555`, and `7777`. Remove
+unused port mappings or add any extra ports configured under
+`poolServer.ports`. The environment variables `REDIS_HOST`, `REDIS_PORT`,
 `DAEMON_HOST`, `DAEMON_PORT`, `WALLET_HOST`, `WALLET_PORT`,
 `WALLET_DAEMON_HOST`, `WALLET_DAEMON_PORT`, `API_HOST`, and `API_PORT` can
 override the corresponding JSON values.
