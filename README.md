@@ -21,6 +21,8 @@ This version is ready for the upcomming DeroGold hard-fork to the cn-upx/2 algo.
   * [Configuration](#2-configuration)
   * [Configure Easyminer](#3-optional-configure-cryptonote-easy-miner-for-your-pool)
   * [Starting the Pool](#4-start-the-pool)
+  * [Running the Pool with Docker](#running-the-pool-with-docker)
+  * [Running wallet-api with systemd](#running-wallet-api-with-systemd)
   * [Host the front-end](#5-host-the-front-end)
   * [Customizing your website](#6-customize-your-website)
   * [Upgrading](#upgrading)
@@ -93,10 +95,19 @@ Usage
 #### Requirements
 * DeroGoldd daemon
 * DeroGold-service
-* [Node.js](http://nodejs.org/) LTS (6,8,10) ([follow these installation instructions](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions))
+* Node.js 18 (the tested deployment uses Node.js 18.20.3)
 * [Redis](http://redis.io/) key-value store v2.6+ ([follow these instructions](http://redis.io/topics/quickstart))
 * libssl required for the node-multi-hashing module
   * For Ubuntu: `sudo apt-get install -y libssl-dev`
+
+> **Crypto compatibility warning:** use Node.js 18 and build the native
+> cryptographic addons with C++14. Although newer Node.js versions may compile
+> after changing the C++ standard or patching addon sources, they are not
+> currently production-safe. Testing with Node.js 22 produced rejected
+> `Bad hash` shares. Do not change the crypto dependency versions, compiler
+> standard, AES flags, or addon sources merely to make a newer Node.js release
+> compile. Proper support for newer Node.js versions requires separate
+> compatibility work and live share-validation testing.
 
 ##### Windows Support
 
@@ -443,6 +454,130 @@ node init.js -module=api
 ```
 
 [Example screenshot](http://i.imgur.com/SEgrI3b.png) of running the pool in single module mode with tmux.
+
+#### Running the pool with Docker
+
+The Docker image deliberately uses Node.js 18.20.3 and copies the already
+installed `node_modules` directory into the image. This preserves the exact
+C++14-built native crypto addons used by a tested native installation. The
+image does not run `npm install`, rebuild addons, or substitute dependencies.
+
+Prepare the host installation first:
+
+```bash
+cd /path/to/derogold-pool
+npm install
+npm test
+```
+
+Review `config.json` before starting. The supplied Compose configuration uses
+host networking so that:
+
+* miners can reach the configured pool port (commonly `3333`);
+* the website can reach the pool API on `8117`;
+* the pool can reach Redis and locally bound daemon/wallet services through
+  `127.0.0.1`.
+
+The default DeroGold daemon RPC port is `6969`; set the daemon port in
+`config.json` to match the local daemon. Existing host Redis data is reused and
+is not stored in a separate container.
+
+Build and start the pool:
+
+```bash
+docker compose build
+docker compose up -d
+```
+
+The container uses the `unless-stopped` restart policy, so it starts again
+after a Docker host reboot and restarts after an unexpected exit.
+
+Common operations:
+
+```bash
+# Follow pool output
+docker compose logs -f pool
+
+# Show container status
+docker compose ps
+
+# Restart the pool
+docker compose restart pool
+
+# Stop and remove the pool container
+docker compose down
+
+# Start it again
+docker compose up -d
+```
+
+After rebuilding `node_modules` on the host, rebuild and recreate the image:
+
+```bash
+docker compose build --no-cache
+docker compose up -d --force-recreate
+```
+
+Check the logs after every dependency or runtime change and confirm both
+accepted shares and the absence of unexpected `Bad hash` or low-difficulty
+rejections before treating the build as production-ready.
+
+#### Running wallet-api with systemd
+
+The wallet payment API can be managed by systemd instead of a shell loop or
+tmux. This makes it start during boot and restart five seconds after either a
+crash or a normal unexpected exit.
+
+Create `/etc/systemd/system/derogold-wallet-api.service` using the template
+below. Replace every `REPLACE_...` value locally. Never commit the completed
+unit, RPC password, wallet file, wallet address, or other credentials to this
+repository.
+
+```ini
+[Unit]
+Description=DeroGold wallet payment API
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=REPLACE_WITH_SERVICE_USER
+Group=REPLACE_WITH_SERVICE_GROUP
+WorkingDirectory=REPLACE_WITH_ABSOLUTE_POOL_DIRECTORY
+ExecStart=/bin/bash -c 'exec REPLACE_WITH_ABSOLUTE_POOL_DIRECTORY/wallet-api -p 1337 -r REPLACE_WITH_RPC_PASSWORD --log-file wallet-api.log --log-level 2 --scan-coinbase-transactions < <(exec /usr/bin/tail -f /dev/null)'
+Restart=always
+RestartSec=5s
+TimeoutStopSec=30s
+
+[Install]
+WantedBy=multi-user.target
+```
+
+The idle `tail` keeps standard input open. This is required because
+`wallet-api` otherwise interprets systemd's closed standard input as a request
+to save and shut down.
+
+Load, enable, and start the service:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now derogold-wallet-api.service
+```
+
+Manage it and follow its output:
+
+```bash
+sudo systemctl status derogold-wallet-api.service
+sudo systemctl restart derogold-wallet-api.service
+sudo systemctl stop derogold-wallet-api.service
+journalctl -u derogold-wallet-api.service -f
+```
+
+The wallet's configured file log can also be followed from the pool directory:
+
+```bash
+tail -f wallet-api.log
+```
 
 
 #### 5) Host the front-end

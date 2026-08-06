@@ -1,0 +1,13 @@
+services:
+  pool:
+    build:
+      context: .
+    init: true
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./config.json:/config/config.json:ro
+      - pool-logs:/app/logs
+
+volumes:
+  pool-logs:

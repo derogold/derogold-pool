@@ -1,0 +1,16 @@
+.git
+.gitignore
+.travis.yml
+build
+
+# Host-only configuration, wallet data, binaries, and logs.
+config.json
+*.wallet
+wallet-api
+wallet-api.log
+*.log
+logs
+
+# Local/editor noise.
+.DS_Store
+*.swp
