@@ -119,9 +119,9 @@ node tests/dependencyTests.js
 - The derogold-pool postinstall workaround is in
   `scripts/patch-native-addons.js` — once these fixes land upstream,
   the wrkzcoin-multi-hashing section of that script can be removed.
-- `turtlecoin-cryptonote-util` also needs `-std=c++17` when compiling
-  against current Node 22 headers, plus `stream_type::streampos` changed to
-  `std::streampos` in `src/serialization/binary_archive.h`.
+- `turtlecoin-cryptonote-util` needs a similar `binding.gyp` fix
+  (`-std=c++0x` → `-std=c++14`; **not** c++17 — that breaks
+  `binary_archive.h`).
 - `cryptonight-hashing` (uPlexa fork) uses NAN so the `->ToObject()`
   fix there is `->ToObject(Nan::GetCurrentContext()).ToLocalChecked()`
   — no bare `isolate` variable in `NAN_METHOD` scope.
