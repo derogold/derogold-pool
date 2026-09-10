@@ -6,6 +6,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
         g++ \
+        git \
         libboost-all-dev \
         make \
         python3 \

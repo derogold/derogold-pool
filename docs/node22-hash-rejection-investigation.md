@@ -1,8 +1,7 @@
 # Node 22+ Hash Rejection Investigation
 
-Status: root cause reproduced and fixed in the pool integration patch path.
-The durable upstream source fix is still pending identification of the DeroGold
-repository used to publish `@leocuvee/cryptonight-hashing`.
+Status: root cause reproduced, fixed in the native dependency source, and
+integrated into the pool through a pinned DeroGold fork commit.
 
 ## Share Validation Path
 
@@ -52,7 +51,26 @@ This is consistent with undefined behavior from aliasing/alignment-sensitive C c
 
 ## Fix
 
-`scripts/patch-native-addons.js` now patches `cryptonight-hashing/binding.gyp` so the C finalizer sources compile at `-O2` instead of `-Ofast` before `node-gyp rebuild`.
+The `@leocuvee/cryptonight-hashing@9.0.3` package source was imported into the
+DeroGold fork at `https://github.com/derogold/node-cryptonight-hashing`.
+The fix branch is `derogold/node22-upx2-jh-fix`, and the fixed source commit is
+`31eba3dfa6ead42e1e0acf5531a2ac08fe727380`.
+
+That dependency commit:
+
+- changes the C compile flags in `binding.gyp` from `-Ofast` to `-O2`;
+- keeps the C++ native addon build compatible with modern Node by using C++20;
+- adds sanitized DeroGold PLEX/UPX2 regression vectors for all four finalizer branches, including the three branch-2 false-rejection captures.
+
+`derogold-pool` now consumes that fixed dependency deterministically:
+
+```json
+"cryptonight-hashing": "git+https://github.com/derogold/node-cryptonight-hashing.git#31eba3dfa6ead42e1e0acf5531a2ac08fe727380"
+```
+
+`scripts/patch-native-addons.js` no longer rewrites `cryptonight-hashing`
+source. It only rebuilds the checked-out dependency after `npm ci
+--ignore-scripts`.
 
 The same script patches legacy native addon sources for modern V8 and compiler
 compatibility. Node 22+ builds use C++20 for the C++ addons, and
@@ -61,7 +79,11 @@ explicitly to avoid ambiguity with `node::crypto` in current Node headers.
 
 This keeps the DeroGold consensus/mining algorithm unchanged. The pool still constructs the same blob, selects `cryptonight_plex(convertedBlob, 8)` for major version `>= 7`, compares hashes byte-for-byte, and applies the same difficulty rules.
 
-The durable upstream dependency fix should be the same source/build change in the repository used to publish `@leocuvee/cryptonight-hashing`: release a new package version with the C JH path protected from `-Ofast` miscompilation, then update `derogold-pool` to depend on that version and remove the downstream patch for this flag.
+Publishing `@leocuvee/cryptonight-hashing@9.0.4` is still pending npm
+authentication on Kobe. `npm whoami` currently returns `E401 Unauthorized`.
+After publish, the pool can move from the Git commit pin to
+`npm:@leocuvee/cryptonight-hashing@9.0.4` if Leo wants the npm package to be the
+canonical dependency.
 
 ## Regression Coverage
 
@@ -92,8 +114,26 @@ Equivalent commands were run under Node 18 and Node 24 with `nvm exec`.
 The Docker image path was verified with:
 
 ```bash
-docker build -t derogold-pool:node24-test .
-docker run --rm derogold-pool:node24-test sh -lc 'node tests/dependencyTests.js && node tests/shareReplayTests.js'
+docker build -t derogold-pool:node24-gitdep-test .
+docker run --rm derogold-pool:node24-gitdep-test sh -lc 'node tests/dependencyTests.js && node tests/shareReplayTests.js'
+```
+
+Dependency fork commands used:
+
+```bash
+npm install --ignore-scripts
+node-gyp rebuild
+npm test
+npm pack --dry-run
+```
+
+The dependency runtime matrix was also run under Node 18, Node 22, and Node 24:
+
+```bash
+nvm exec "$v" npm install --ignore-scripts
+nvm exec "$v" node-gyp clean
+nvm exec "$v" node-gyp rebuild
+nvm exec "$v" npm test
 ```
 
 | Environment | Runtime | Compiler | Corpus | Pre-fix false rejects | Post-fix result |
@@ -103,6 +143,7 @@ docker run --rm derogold-pool:node24-test sh -lc 'node tests/dependencyTests.js 
 | Current-LTS check | Node `v24.21.0`, npm `11.19.0` | GCC/G++ `12.5.0` | 6 valid PLEX/UPX2 shares | not applicable; required extra V8/C++ patches to build | 6/6 accepted, dependency vectors passed |
 | Docker live pre-fix | Node `v22.23.2`, V8 `12.4.254.21-node.56`, node-gyp `13.0.2`, x86_64 | GCC/G++ `12.2.0`; miner GCC/G++ `15.3.0` | live `cn/upx2`, one thread, fixed diff `10000` | 7/27 server-side `bad_hash` | not fixed in this run |
 | Docker live post-fix | Node `v22.23.2`, V8 `12.4.254.21-node.56`, node-gyp `13.0.2`, x86_64 | GCC/G++ `12.2.0`; miner GCC/G++ `15.3.0` | live `cn/upx2`, one thread, diff `10000` then retargeted to `100001` | not applicable | 9/9 accepted, 0 `bad_hash`, 0 low difficulty |
+| Dependency fork | Node `v18.20.4`, `v22.22.2`, `v24.21.0` | GCC/G++ `12.5.0` | 6 valid PLEX/UPX2 vectors | branch-2 vectors fail with dependency `-Ofast` build in Docker target | 6/6 vectors passed on every runtime |
 
 The historical "about one third" report was not reproduced exactly, but the
 measured bad-hash rates before the fix were close enough to classify the same
@@ -111,10 +152,10 @@ run. After the fix, the isolated live run produced `0/9` false rejects.
 
 ## Residual Risk
 
-- The pool branch contains the deterministic integration patch. The source
-  repository that owns `@leocuvee/cryptonight-hashing@9.0.3` still needs the
-  same fix and regression vectors before a new npm version can replace the
-  downstream patch.
+- The fixed dependency is pushed to the DeroGold fork, but npm publication is
+  not complete because this host is not authenticated to npm. Release sequence:
+  publish `@leocuvee/cryptonight-hashing@9.0.4`, then optionally update the pool
+  dependency from the Git commit pin to the npm alias.
 - The committed corpus covers the PLEX/UPX2 path used by current DeroGold
   blocks and all four finalizer branches, but it is still small. More captured
   production shares would improve confidence in rare CPU/compiler path issues.

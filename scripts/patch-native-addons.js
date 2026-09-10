@@ -118,28 +118,10 @@ rebuild('turtlecoin-cryptonote-util')
 
 // ---------------------------------------------------------------------------
 // cryptonight-hashing
-// Fixes: V8 ToObject() — uses NAN, so context is Nan::GetCurrentContext()
-//        (no bare `isolate` variable in NAN_METHOD scope)
-//        c_jh.c is miscompiled by modern GCC under -Ofast; use -O2 for C
-//        finalizer sources so PLEX/UPX2 JH hashes match miner/daemon truth.
+// The DeroGold fork contains the Node/V8 and PLEX/UPX2 hash fixes. Rebuild the
+// source checkout after npm installs it with lifecycle scripts disabled.
 // ---------------------------------------------------------------------------
 console.log('\n[cryptonight-hashing]')
-patchFile(path.join(nm, 'cryptonight-hashing', 'binding.gyp'), [
-  [
-    '-std=gnu11      -fPIC -DNDEBUG -Ofast -fno-fast-math',
-    '-std=gnu11      -fPIC -DNDEBUG -O2 -fno-fast-math'
-  ],
-  [
-    '-std=gnu++11 -s -fPIC -DNDEBUG -Ofast -fno-fast-math -fno-exceptions -fno-rtti -Wno-class-memaccess',
-    '-std=gnu++20 -s -fPIC -DNDEBUG -Ofast -fno-fast-math -fno-exceptions -fno-rtti -Wno-class-memaccess'
-  ]
-])
-patchFile(path.join(nm, 'cryptonight-hashing', 'multihashing.cc'), [
-  [
-    '->ToObject()',
-    '->ToObject(Nan::GetCurrentContext()).ToLocalChecked()'
-  ]
-])
 rebuild('cryptonight-hashing')
 
 console.log('\nAll native addons patched and rebuilt successfully.')
