@@ -24,7 +24,7 @@
         "dateformat": "^4.0.0",
         "redis": "^4.7.0",
         "turtlecoin-cryptonote-util": "npm:@leocuvee/turtlecoin-cryptonote-util@0.1.0",
-        "turtlecoin-utils": "npm:@leocuvee/turtlecoin-utils@0.1.2",
+        "turtlecoin-utils": "git+https://github.com/derogold/turtlecoin-utils.git#e90c00bdcad5719473856885f389e853a09e481a",
         "wrkzcoin-multi-hashing": "npm:@leocuvee/wrkzcoin-multi-hashing@0.0.21"
     },
     "engines": {
