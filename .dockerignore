@@ -2,6 +2,7 @@
 .gitignore
 .travis.yml
 build
+node_modules
 
 # Host-only configuration, wallet data, binaries, and logs.
 config.json

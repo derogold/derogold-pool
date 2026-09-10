@@ -95,19 +95,17 @@ Usage
 #### Requirements
 * DeroGoldd daemon
 * DeroGold-service
-* Node.js 18 (the tested deployment uses Node.js 18.20.3)
+* Node.js 18, 22, or 24 LTS
 * [Redis](http://redis.io/) key-value store v2.6+ ([follow these instructions](http://redis.io/topics/quickstart))
 * libssl required for the node-multi-hashing module
   * For Ubuntu: `sudo apt-get install -y libssl-dev`
 
-> **Crypto compatibility warning:** use Node.js 18 and build the native
-> cryptographic addons with C++14. Although newer Node.js versions may compile
-> after changing the C++ standard or patching addon sources, they are not
-> currently production-safe. Testing with Node.js 22 produced rejected
-> `Bad hash` shares. Do not change the crypto dependency versions, compiler
-> standard, AES flags, or addon sources merely to make a newer Node.js release
-> compile. Proper support for newer Node.js versions requires separate
-> compatibility work and live share-validation testing.
+> **Native addon build note:** install with `npm ci --ignore-scripts`, then run
+> `node scripts/patch-native-addons.js` before starting the pool. The patch
+> script applies the source compatibility fixes required by modern Node/V8 and
+> rebuilds the native hashing addons. Node.js 22+ support was validated with
+> live DeroGold `cn/upx2` share replay; see
+> `docs/node22-hash-rejection-investigation.md`.
 
 ##### Windows Support
 
@@ -457,17 +455,17 @@ node init.js -module=api
 
 #### Running the pool with Docker
 
-The Docker image deliberately uses Node.js 18.20.3 and copies the already
-installed `node_modules` directory into the image. This preserves the exact
-C++14-built native crypto addons used by a tested native installation. The
-image does not run `npm install`, rebuild addons, or substitute dependencies.
+The Docker image uses Node.js 24 LTS, installs dependencies inside the image
+with `npm ci --ignore-scripts`, then runs `node scripts/patch-native-addons.js`
+to patch and rebuild the native addons for the container runtime. Host
+`node_modules` is ignored by `.dockerignore`.
 
-Prepare the host installation first:
+Build and test the image:
 
 ```bash
 cd /path/to/derogold-pool
-npm install
-npm test
+docker compose build
+docker compose run --rm pool sh -lc 'node tests/dependencyTests.js && node tests/shareReplayTests.js'
 ```
 
 Review `config.json` before starting. The supplied Compose configuration uses
@@ -482,10 +480,9 @@ The default DeroGold daemon RPC port is `6969`; set the daemon port in
 `config.json` to match the local daemon. Existing host Redis data is reused and
 is not stored in a separate container.
 
-Build and start the pool:
+Start the pool:
 
 ```bash
-docker compose build
 docker compose up -d
 ```
 
@@ -511,7 +508,8 @@ docker compose down
 docker compose up -d
 ```
 
-After rebuilding `node_modules` on the host, rebuild and recreate the image:
+After changing native addon patches or dependencies, rebuild and recreate the
+image:
 
 ```bash
 docker compose build --no-cache

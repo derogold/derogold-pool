@@ -1,7 +1,7 @@
 'use strict'
 
 /**
- * Patches native C++ addons to compile against Node 18+ / V8 10+.
+ * Patches native C++ addons to compile against modern Node / V8 headers.
  *
  * The upstream packages were written against the old V8 API (pre-Node 10) and
  * will not compile on modern Node without these changes.  Run after every
@@ -58,12 +58,13 @@ function rebuild (packageName) {
 
 // ---------------------------------------------------------------------------
 // wrkzcoin-multi-hashing
-// Fixes: C++ standard (c++0x → c++17), V8 API (ToObject / Value accessors /
+// Fixes: C++ standard (c++0x -> c++20), V8 API (ToObject / Value accessors /
 //        String::NewFromUtf8 now return MaybeLocal / need context argument)
 // ---------------------------------------------------------------------------
 console.log('\n[wrkzcoin-multi-hashing]')
 patchFile(path.join(nm, 'wrkzcoin-multi-hashing', 'binding.gyp'), [
-  ['-std=c++0x', '-std=c++17']
+  ['-std=c++0x', '-std=c++20'],
+  ['-std=c++17', '-std=c++20']
 ])
 patchFile(path.join(nm, 'wrkzcoin-multi-hashing', 'multihashing.cc'), [
   // String::NewFromUtf8 now returns MaybeLocal<String>
@@ -95,11 +96,23 @@ rebuild('wrkzcoin-multi-hashing')
 
 // ---------------------------------------------------------------------------
 // turtlecoin-cryptonote-util
-// Fixes: C++ standard (c++0x → c++14).  c++17 breaks binary_archive.h.
+// Fixes: C++ standard and binary_archive.h for modern Node/V8 headers.
 // ---------------------------------------------------------------------------
 console.log('\n[turtlecoin-cryptonote-util]')
 patchFile(path.join(nm, 'turtlecoin-cryptonote-util', 'binding.gyp'), [
-  ['-std=c++0x', '-std=c++14']
+  ['-std=c++0x', '-std=c++20'],
+  ['-std=c++14', '-std=c++20'],
+  ['-std=c++17', '-std=c++20']
+])
+patchFile(path.join(nm, 'turtlecoin-cryptonote-util', 'src', 'serialization', 'binary_archive.h'), [
+  ['stream_type::streampos', 'std::streampos']
+])
+patchFile(path.join(nm, 'turtlecoin-cryptonote-util', 'src', 'main.cc'), [
+  ['std::vector<crypto::hash>', 'std::vector<::crypto::hash>'],
+  ['block2.parent_block.miner_tx_branch.resize(crypto::tree_depth(block1.tx_hashes.size() + 1));', 'block2.parent_block.miner_tx_branch.resize(::crypto::tree_depth(block1.tx_hashes.size() + 1));'],
+  ['    tree_branch(transactionHashes.data(), transactionHashes.size(), block2.parent_block.miner_tx_branch.data());', '    ::crypto::tree_branch(transactionHashes.data(), transactionHashes.size(), block2.parent_block.miner_tx_branch.data());'],
+  ['    crypto::hash block_id;', '    ::crypto::hash block_id;'],
+  ['    if (!crypto::check_key(adr.m_spend_public_key) || !crypto::check_key(adr.m_view_public_key)) {', '    if (!::crypto::check_key(adr.m_spend_public_key) || !::crypto::check_key(adr.m_view_public_key)) {']
 ])
 rebuild('turtlecoin-cryptonote-util')
 
@@ -107,8 +120,20 @@ rebuild('turtlecoin-cryptonote-util')
 // cryptonight-hashing
 // Fixes: V8 ToObject() — uses NAN, so context is Nan::GetCurrentContext()
 //        (no bare `isolate` variable in NAN_METHOD scope)
+//        c_jh.c is miscompiled by modern GCC under -Ofast; use -O2 for C
+//        finalizer sources so PLEX/UPX2 JH hashes match miner/daemon truth.
 // ---------------------------------------------------------------------------
 console.log('\n[cryptonight-hashing]')
+patchFile(path.join(nm, 'cryptonight-hashing', 'binding.gyp'), [
+  [
+    '-std=gnu11      -fPIC -DNDEBUG -Ofast -fno-fast-math',
+    '-std=gnu11      -fPIC -DNDEBUG -O2 -fno-fast-math'
+  ],
+  [
+    '-std=gnu++11 -s -fPIC -DNDEBUG -Ofast -fno-fast-math -fno-exceptions -fno-rtti -Wno-class-memaccess',
+    '-std=gnu++20 -s -fPIC -DNDEBUG -Ofast -fno-fast-math -fno-exceptions -fno-rtti -Wno-class-memaccess'
+  ]
+])
 patchFile(path.join(nm, 'cryptonight-hashing', 'multihashing.cc'), [
   [
     '->ToObject()',
