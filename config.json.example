@@ -106,6 +106,7 @@
     "host": "127.0.0.1",
     "port": 8117,
     "blocks": 30,
+    "blocksWindowMinutes": 60,
     "payments": 30,
     "password": "YOUR_API_PASSWORD"
   },
@@ -120,6 +121,11 @@
     "child": {
       "coin": "WrkzCoin",
       "symbol": "WRKZ",
+      "coinDifficultyTarget": 60,
+      "poolFee": null,
+      "finderRewardPercent": null,
+      "minimumPayout": null,
+      "paymentInterval": null,
       "poolAddress": "YOUR_WRKZ_POOL_WALLET_ADDRESS",
       "daemon": {
         "host": "127.0.0.1",
