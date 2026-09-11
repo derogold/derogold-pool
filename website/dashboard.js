@@ -10,6 +10,11 @@
     adminPassword: ''
   }
 
+  var storageKeys = {
+    minerAddress: 'derogoldPool.dashboard.minerAddress',
+    adminPassword: 'derogoldPool.dashboard.adminPassword'
+  }
+
   var queryParams = new URLSearchParams(window.location.search)
   var dashboardConfig = window.poolDashboardConfig || {}
   var apiBase = stripTrailingSlash(queryParams.get('api') || dashboardConfig.apiBase || dashboardConfig.api || window.api || '')
@@ -66,6 +71,30 @@
   function setText(id, value) {
     var node = $(id)
     if (node) node.textContent = value
+  }
+
+  function loadSavedValue(key) {
+    try {
+      return window.localStorage.getItem(key) || ''
+    } catch (error) {
+      return ''
+    }
+  }
+
+  function saveValue(key, value) {
+    try {
+      if (value) {
+        window.localStorage.setItem(key, value)
+      } else {
+        window.localStorage.removeItem(key)
+      }
+    } catch (error) {}
+  }
+
+  function saveRememberedInputs() {
+    saveValue(storageKeys.minerAddress, $('minerAddress').value.trim())
+    state.adminPassword = $('adminPassword').value.trim()
+    saveValue(storageKeys.adminPassword, state.adminPassword)
   }
 
   function setStatus(kind, text) {
@@ -727,22 +756,36 @@
   }
 
   function bindEvents() {
+    var savedMinerAddress = loadSavedValue(storageKeys.minerAddress)
+    var savedAdminPassword = loadSavedValue(storageKeys.adminPassword)
+    if (savedMinerAddress) $('minerAddress').value = savedMinerAddress
+    if (savedAdminPassword) {
+      state.adminPassword = savedAdminPassword
+      $('adminPassword').value = savedAdminPassword
+    }
+
     window.addEventListener('hashchange', routeFromHash)
     $('refreshButton').addEventListener('click', function () {
       loadStats()
       loadMarketPrices()
     })
+    Array.prototype.forEach.call(['input', 'change', 'blur'], function (eventName) {
+      $('minerAddress').addEventListener(eventName, saveRememberedInputs)
+      $('adminPassword').addEventListener(eventName, saveRememberedInputs)
+    })
+    window.addEventListener('pagehide', saveRememberedInputs)
     $('minerForm').addEventListener('submit', function (event) {
       event.preventDefault()
       var address = $('minerAddress').value.trim()
       if (!address) return
+      saveRememberedInputs()
       fetchJson('/stats_address', { address: address }).then(renderMiner).catch(function (error) {
         $('minerResult').innerHTML = '<section class="panel"><p class="empty">' + escapeHtml(error.message) + '</p></section>'
       })
     })
     $('adminForm').addEventListener('submit', function (event) {
       event.preventDefault()
-      state.adminPassword = $('adminPassword').value.trim()
+      saveRememberedInputs()
       fetchJson('/admin_stats', { password: state.adminPassword }).then(renderAdminStats).catch(function (error) {
         renderAdminStats({ error: error.message })
       })
