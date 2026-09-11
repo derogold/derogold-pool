@@ -202,6 +202,7 @@
           metric('Reward', formatCoins(network.reward, entry.symbol)) +
           metric('Blocks Found', formatNumber(blocks.found)) +
           metric('Current Effort', formatPercent(blocks.currentEffortPercent)) +
+          metric('Pool Fee', formatPercent(pool.fee)) +
           metric('Min Payout', formatCoins(pool.minimumPayout, entry.symbol)) +
           metric('Unlock Depth', formatNumber(pool.unlockDepth)) +
         '</div>' +
@@ -388,6 +389,7 @@
           balance('Pending', formatCoins(stats.balance, symbol)) +
           balance('Paid', formatCoins(stats.paid, symbol)) +
           balance('Last Share', formatDate(stats.lastShare)) +
+          balance('Pool Fee', formatPercent(coin.poolFee)) +
           balance('Min Payout', formatCoins(coin.minimumPayout, symbol)) +
         '</div>' +
         (coin.payoutAddress ? '<p class="mono">WRKZ payout: ' + escapeHtml(coin.payoutAddress) + '</p>' : '') +
