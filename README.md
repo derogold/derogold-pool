@@ -1,717 +1,418 @@
-<img src="https://i.imgur.com/4FlvRAt.png" width="200">
+# DeroGold Pool
 
+DeroGold Pool is the production mining pool for DeroGold/DEGO, with native CryptoNote hashing support, Node.js 22 Docker deployment, Redis-backed accounting, wallet-api payments, a static dashboard, and optional WRKZ merged mining.
 
-Derogold-pool (for NodeJS LTS)
-====================
-Formerly known as cryptonote-forknote-pool, forked from Forknote Project.
+This repository is derived from the original CryptoNote/Forknote Node.js pool, but the current codebase is maintained for DeroGold `cn/upx2` mining. Node.js 18 is still useful as a compatibility control, but the supported production path is modern Node.js with rebuilt native addons.
 
-High performance Node.js (with native C addons) mining pool for Cryptonote based coins, created with the Forknote software such as Bytecoin, Dashcoin, etc..
+## Features
 
-Comes with lightweight example front-end script which uses the pool's AJAX API.
+- Stratum-like TCP mining server with fixed and variable difficulty.
+- DeroGold share validation using the same blob construction, hash selection, byte ordering, and difficulty checks as the pool runtime.
+- Optional WRKZ merged mining with DEGO as the parent work stream.
+- DEGO-only miners remain compatible by using a normal DEGO address and any non-WRKZ password value.
+- WRKZ opt-in miners provide the DEGO address as `-u` and the WRKZ payout address as `-p`.
+- Separate parent and child accounting, fees, unlock depth, Redis namespaces, wallet API settings, blocks, payments, and dashboard stats.
+- Payment planner with large-balance and fee-aware transfer splitting.
+- Public API, admin accounting endpoint, public service health endpoint, market price endpoint, and chart collectors.
+- Static dashboard for pool overview, miner lookup, blocks, payments, connect instructions, and admin accounting.
+- Docker Compose deployment using Node.js 22 and host networking.
 
-This version is ready for the upcomming DeroGold hard-fork to the cn-upx/2 algo. 
+## Repository Layout
 
-#### Table of Contents
-* [Features](#features)
-* [Community Support](#community--support)
-* [Pools Using This Software](#pools-using-this-software)
-* [Usage](#usage)
-  * [Requirements](#requirements)
-  * [Downloading & Installing](#1-downloading--installing)
-  * [Configuration](#2-configuration)
-  * [Configure Easyminer](#3-optional-configure-cryptonote-easy-miner-for-your-pool)
-  * [Starting the Pool](#4-start-the-pool)
-  * [Running the Pool with Docker](#running-the-pool-with-docker)
-  * [Running wallet-api with systemd](#running-wallet-api-with-systemd)
-  * [Host the front-end](#5-host-the-front-end)
-  * [Customizing your website](#6-customize-your-website)
-  * [Upgrading](#upgrading)
-* [Setting up Testnet](#setting-up-testnet)
-* [JSON-RPC Commands from CLI](#json-rpc-commands-from-cli)
-* [Monitoring Your Pool](#monitoring-your-pool)
-* [Configuring Blockchain Explorer](#configuring-blockchain-explorer)
-* [Credits](#credits)
-* [License](#license)
+- `init.js` starts the selected modules.
+- `lib/pool.js` serves miners, builds jobs, validates shares, and submits parent/child blocks.
+- `lib/mergedMining.js` builds and validates the merged-mining auxiliary data.
+- `lib/blockUnlocker.js` matures parent and child blocks and credits balances.
+- `lib/paymentProcessor.js` sends DEGO and WRKZ payments through wallet-api.
+- `lib/paymentPlanner.js` prepares fee-aware wallet transfer commands.
+- `lib/api.js` exposes public stats, admin stats, health, charts, and market data.
+- `website/` contains the static dashboard.
+- `scripts/patch-native-addons.js` applies native addon compatibility patches and rebuilds dependencies.
+- `scripts/prepare-redis-migration.js` prepares Redis migration commands for production cutovers.
+- `tests/` contains dependency, share replay, merged-mining, and payment planner regression tests.
+- `docs/` contains operational and investigation notes.
 
+## Requirements
 
-#### Basic features
+- Linux host with build tools.
+- Node.js `>=18 <25`. Node.js 22 is the primary deployment target.
+- Redis.
+- Synced DeroGold daemon with mining/RPC enabled.
+- DeroGold wallet-api for payments.
+- Optional synced WRKZ daemon and WRKZ wallet-api for merged-mining payments.
+- `git`, `make`, `g++`, `python3`, `node-gyp`, and Boost headers for native addon builds.
 
-* TCP (stratum-like) protocol for server-push based jobs
-  * Compared to old HTTP protocol, this has a higher hash rate, lower network/CPU server load, lower orphan
-    block percent, and less error prone
-* IP banning to prevent low-diff share attacks
-* Socket flooding detection
-* Payment processing
-  * Splintered transactions to deal with max transaction size
-  * Minimum payment threshold before balance will be paid out
-  * Minimum denomination for truncating payment amount precision to reduce size/complexity of block transactions
-* Detailed logging
-* Ability to configure multiple ports - each with their own difficulty
-* Variable difficulty / share limiter
-* Share trust algorithm to reduce share validation hashing CPU load
-* Clustering for vertical scaling
-* Modular components for horizontal scaling (pool server, database, stats/API, payment processing, front-end)
-* Live stats API (using AJAX long polling with CORS)
-  * Currency network/block difficulty
-  * Current block height
-  * Network hashrate
-  * Pool hashrate
-  * Each miners' individual stats (hashrate, shares submitted, pending balance, total paid, etc)
-  * Blocks found (pending, confirmed, and orphaned)
-* An easily extendable, responsive, light-weight front-end using API to display data
-
-#### Extra features
-
-* Admin panel
-  * Aggregated pool statistics
-  * Coin daemon & wallet RPC services stability monitoring
-  * Log files data access
-  * Users list with detailed statistics
-* Historic charts of pool's hashrate and miners count, coin difficulty, rates and coin profitability
-* Historic charts of users's hashrate and payments
-* Miner login(wallet address) validation
-* Five configurable CSS themes
-* Universal blocks and transactions explorer based on [chainradar.com](http://chainradar.com)
-* FantomCoin & MonetaVerde support
-* Set fixed difficulty on miner client by passing "address" param with ".[difficulty]" postfix
-* Prevent "transaction is too big" error with "payments.maxTransactionAmount" option
-
-
-### Community / Support
-
-* [CryptoNote Technology](https://cryptonote.org)
-* [CryptoNote Forum](https://forum.cryptonote.org/)
-* [CryptoNote Universal Pool Forum](https://bitcointalk.org/index.php?topic=705509)
-* [Forknote](https://forknote.net)
-* [DeroGold](https://discordapp.com/invite/j2aSNFn)
-
-#### Pools Using This Software
-
-* https://pool-cz.derogold4ever.online
-
-Usage
-===
-
-#### Requirements
-* DeroGoldd daemon
-* DeroGold-service
-* Node.js 18, 22, or 24 LTS
-* [Redis](http://redis.io/) key-value store v2.6+ ([follow these instructions](http://redis.io/topics/quickstart))
-* libssl required for the node-multi-hashing module
-  * For Ubuntu: `sudo apt-get install -y libssl-dev`
-
-> **Native addon build note:** install with `npm ci --ignore-scripts`, then run
-> `node scripts/patch-native-addons.js` before starting the pool. The patch
-> script applies the source compatibility fixes required by modern Node/V8 and
-> rebuilds the native hashing addons. Node.js 22+ support was validated with
-> live DeroGold `cn/upx2` share replay; see
-> `docs/node22-hash-rejection-investigation.md`.
-
-##### Windows Support
-
-You will need the windows build tools to install this module (and many more) on windows. Run the following command to set up your environment.
+On Debian/Ubuntu:
 
 ```bash
-npm install -g windows-build-tools --vs2015
+sudo apt-get update
+sudo apt-get install -y git build-essential python3 libboost-all-dev redis-server
 ```
 
-##### Seriously
-Those are legitimate requirements. If you use old versions of Node.js or Redis that may come with your system package manager then you will have problems. Follow the linked instructions to get the last stable versions.
+Use a current Node.js release from your preferred Node distribution. Avoid old distribution Node packages.
 
-[**Redis security warning**](http://redis.io/topics/security): be sure firewall access to redis - an easy way is to
-include `bind 127.0.0.1` in your `redis.conf` file. Also it's a good idea to learn about and understand software that
-you are using - a good place to start with redis is [data persistence](http://redis.io/topics/persistence).
-
-##### Easy install on Ubuntu LTS
-
-Installing pool on different Linux distributives is different because it depends on system default components and versions. For now the easiest way to install pool is to use Ubuntu 14 LTS. Thus, all you had to do in order to prepare Ubuntu 14 for pool installation is to run:
+## Install
 
 ```bash
-sudo apt-get install -y git build-essential redis-server libboost-all-dev cmake libssl-dev node-gyp
-```
-
-##### Debian 9 installation
-These are the steps taken to install pool on Debian 9.  These steps will also work on Ubuntu 16 & 18:
-
-```bash
-sudo apt-get install -y git curl wget screen build-essential redis-server libboost-all-dev cmake libssl-dev node-gyp
-```
-I have currently tested this on Node 10.24.1.
-
-You can install node here: (https://nodejs.org/en/download/package-manager/)
-
-Or directly from a terminal:
-
-```bash
-curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-sudo apt-get install -y nodejs
-```
-
-I have found using a screen session to keep everything running on the server works well.
-
-Grab your most recent DeroGold release (https://github.com/derogold/derogold/releases/) then launch your daemon and sync your chain.
-
-Once your daemon is synced with the network start your DeroGold-service and redis-server.
-
-#### 1) Downloading & Installing
-
-Clone the repository and run `npm install` for all the dependencies to be installed:
-
-```bash
-git clone https://github.com/derogold/derogold-pool.git derogold-pool
+git clone https://github.com/derogold/derogold-pool.git
 cd derogold-pool
-npm install && npm test
+npm ci --ignore-scripts
+node scripts/patch-native-addons.js
 ```
 
-#### 2) Configuration
+The install intentionally uses `--ignore-scripts`. Native addons are patched and rebuilt by `scripts/patch-native-addons.js` so the exact compatibility fixes are under repository control.
 
+## Configuration
 
-Explanation for each field:
-```javascript
-/* Used for storage in redis so multiple coins can share the same redis instance. */
-"coin": "dashcoin",
+Create a local config from the example:
 
-/* Used for front-end display */
-"symbol": "DSH",
+```bash
+cp config.json.example config.json
+```
 
-/* Minimum units in a single coin, see COIN constant in DAEMON_CODE/src/cryptonote_config.h */
-"coinUnits": 1000000000000,
+`config.json` is gitignored. Do not commit real wallet addresses, RPC passwords, wallet filenames, daemon IPs, Redis credentials, exchange API keys, or production hostnames.
 
-/* Coin network time to mine one block, see DIFFICULTY_TARGET constant in DAEMON_CODE/src/cryptonote_config.h */
-"coinDifficultyTarget": 120,
+Important sections:
 
-"logging": {
+- `coin`, `symbol`, `coinUnits`, `coinDifficultyTarget`: parent DEGO constants.
+- `poolServer.poolAddress`: DEGO pool wallet address where mined rewards go.
+- `poolServer.ports`: public mining ports and starting difficulties.
+- `poolServer.varDiff`: per-miner difficulty retargeting.
+- `payments`: DEGO payout interval, fee, minimum payout, denomination, and split limits.
+- `blockUnlocker`: DEGO unlock depth and pool fee.
+- `daemon`: DEGO daemon RPC connection.
+- `wallet`: DEGO wallet-api connection and wallet file details.
+- `redis`: Redis connection.
+- `api`: API bind host/port, public list limits, chart window, and admin password.
+- `market.cexswap`: optional CEXSwap market-price settings.
+- `mergedMining`: optional child-chain settings.
 
-    "files": {
+### Merged Mining
 
-        /* Specifies the level of log output verbosity. This level and anything
-           more severe will be logged. Options are: info, warn, or error. */
-        "level": "info",
+WRKZ merged mining is disabled in `config.json.example`. To enable it, set the child section with your own daemon, wallet, pool address, and genesis hashes:
 
-        /* Directory where to write log files. */
-        "directory": "logs",
-
-        /* How often (in seconds) to append/flush data to the log files. */
-        "flushInterval": 5
-    },
-
-    "console": {
-        "level": "info",
-        /* Gives console output useful colors. If you direct that output to a log file
-           then disable this feature to avoid nasty characters in the file. */
-        "colors": true
-    }
-},
-
-/* Modular Pool Server */
-"poolServer": {
+```json
+{
+  "mergedMining": {
     "enabled": true,
-
-    /* Set to "auto" by default which will spawn one process/fork/worker for each CPU
-       core in your system. Each of these workers will run a separate instance of your
-       pool(s), and the kernel will load balance miners using these forks. Optionally,
-       the 'forks' field can be a number for how many forks will be spawned. */
-    "clusterForks": "auto",
-
-    /* Address where block rewards go, and miner payments come from. */
-    "poolAddress": "D6WLtrV1SBWV8HWQzQv8uuYuGy3uwZ8ah5iT5HovSqhTKMauquoTsKP8RBJzVqVesX87poYWQgkGWB4NWHJ6Ravv93v4BaE"
-
-    /* Poll RPC daemons for new blocks every this many milliseconds. */
-    "blockRefreshInterval": 1000,
-
-    /* How many seconds until we consider a miner disconnected. */
-    "minerTimeout": 900,
-
-    "ports": [
-        {
-            "port": 3333, //Port for mining apps to connect to
-            "difficulty": 100, //Initial difficulty miners are set to
-            "desc": "Low end hardware" //Description of port
-        },
-        {
-            "port": 5555,
-            "difficulty": 2000,
-            "desc": "Mid range hardware"
-        },
-        {
-            "port": 7777,
-            "difficulty": 10000,
-            "desc": "High end hardware"
-        }
-    ],
-
-    /* Variable difficulty is a feature that will automatically adjust difficulty for
-       individual miners based on their hashrate in order to lower networking and CPU
-       overhead. */
-    "varDiff": {
-        "minDiff": 2, //Minimum difficulty
-        "maxDiff": 100000,
-        "targetTime": 100, //Try to get 1 share per this many seconds
-        "retargetTime": 30, //Check to see if we should retarget every this many seconds
-        "variancePercent": 30, //Allow time to very this % from target without retargeting
-        "maxJump": 100 //Limit diff percent increase/decrease in a single retargeting
-    },
-
-    /* Set difficulty on miner client side by passing <address> param with .<difficulty> postfix
-       minerd -u D3z2DDWygoZU4NniCNa4oMjjKi45dC2KHUWUyD1RZ1pfgnRgcHdfLVQgh5gmRv4jwEjCX5LoLERAf5PbjLS43Rkd8vFUM1m.5000 */
-    "fixedDiff": {
+    "parentGenesisHash": "REPLACE_WITH_DEGO_GENESIS_HASH",
+    "childGenesisHash": "REPLACE_WITH_WRKZ_GENESIS_HASH",
+    "child": {
+      "coin": "WrkzCoin",
+      "symbol": "WRKZ",
+      "coinDifficultyTarget": 60,
+      "unlockDepth": 40,
+      "poolFee": 1,
+      "poolAddress": "YOUR_WRKZ_POOL_WALLET_ADDRESS",
+      "daemon": {
+        "host": "127.0.0.1",
+        "port": 17856
+      },
+      "wallet": {
+        "host": "127.0.0.1",
+        "port": 1338,
+        "password": "YOUR_WRKZ_WALLET_API_PASSWORD",
+        "filename": "/path/to/your/wrkz.wallet",
+        "walletPassword": "YOUR_WRKZ_WALLET_FILE_PASSWORD",
+        "daemonHost": "127.0.0.1",
+        "daemonPort": 17856
+      },
+      "payments": {
         "enabled": true,
-        "separator": ".", // character separator between <address> and <difficulty>
-    },
-
-    /* Feature to trust share difficulties from miners which can
-       significantly reduce CPU load. */
-    "shareTrust": {
-      "enabled": false, //enable or disable the shareTrust system. shareTrust can offer significant CPU workload reduction, however does present a risk of being exploited by miners gaming the percentages of the system.
-      "maxTrustPercent": 50, //The maximum percent chance a share will be considered trusted (not fully validated) 50 means 1 of 2 shares are fully validated at random, 75 means 1 of 4 are fully validated (or 3 of 4 are trusted).
-      "probabilityStepPercent": 1, //The percent the probabality of a share is trusted increases from 0 to maxTrustPercent at a maximum rate of once per probabilityStepWindow seconds in steps of probabilityStepPercent and only on share submission.
-      "probabilityStepWindow": 30, //The probability (chance a share is considered trusted) will increase from 0 to maxTrustPercent by steps of probabilityStepPercent at a maximum rate of once every probabilityStepWindow seconds.
-      "minUntrustedShares": 50, //The minimum amount of shares that will be fully validated before shareTrust will begin.
-      "minUntrustedSeconds": 300, //The minimum amount of time in seconds shares will be fully validated before shareTrust will begin.
-      "maxTrustedDifficulty": 100000, //Shares above this difficulty will be fully validated (not trusted).
-      "maxPenaltyMultiplier": 100, //The maximum penalty multiplied against minUntrustedShares and minUntrustedSeconds.
-      "minPenaltyMultiplier": 2, //The minimum penalty multiplied against minUntrustedShares and minUntrustedSeconds.
-      "penaltyMultiplierStep": 1, //The penalty is multiplied against minUntrustedShares and minUntrustedSeconds. The penalty Steps up/down penaltyMultiplierStep a maximum of once per every penaltyStepUpWindow or penaltyStepDownWindow and only on share submission.
-      "penaltyStepUpWindow": 30, //The penalty steps up a maximum of penaltyMultiplierStep every penaltyStepUpWindow seconds and only on share submission.
-      "penaltyStepDownWindow": 120, //The penalty steps down a maximum of penaltyMultiplierStep every penaltyStepDownWindow seconds and only on share submission.
-      "maxShareWindow": 300, //Must Submit within this window or minUntrustedSeconds, minUntrustedShares and Probability are reset.
-      "maxIPCRate": 15, //The minimum amount of seconds between sharing a miners shareTrust data between pool threads.
-      "maxAge": 604800 //Maximum seconds to retain dissconnected miner shareTrust data in memory.
-    },
-
-    /* If under low-diff share attack we can ban their IP to reduce system/network load. */
-    "banning": {
-        "enabled": true,
-        "time": 600, //How many seconds to ban worker for
-        "invalidPercent": 25, //What percent of invalid shares triggers ban
-        "checkThreshold": 30 //Perform check when this many shares have been submitted
-    },
-    /* Slush Mining is a reward calculation technique which disincentivizes pool hopping and rewards users to mine with the pool steadily: Values of each share decrease in time – younger shares are valued higher than older shares.
-    More about it here: https://mining.bitcoin.cz/help/#!/manual/rewards */
-    /* There is some bugs with enabled slushMining. Use with '"enabled": false' only. */
-
-    "slushMining": {
-        "enabled": false, // 'true' enables slush mining. Recommended for pools catering to professional miners
-        "weight": 120, //defines how fast value assigned to a share declines in time
-        "lastBlockCheckRate": 1 //How often the pool checks for the timestamp of the last block. Lower numbers increase load for the Redis db, but make the share value more precise.
+        "interval": 120,
+        "maxAddresses": 2,
+        "transferFee": 10000,
+        "minPayment": 10000000,
+        "denomination": 100,
+        "mixin": 1
+      }
     }
-},
-
-/* Module that sends payments to miners according to their submitted shares. */
-"payments": {
-    "enabled": true,
-    "interval": 600, //how often to run in seconds
-    "maxAddresses": 50, //split up payments if sending to more than this many addresses
-    "transferFee": 5000000000, //fee to pay for each transaction
-    "minPayment": 100000000000, //miner balance required before sending payment
-    "maxTransactionAmount": 0, //split transactions by this amount(to prevent "too big transaction" error)
-    "denomination": 100000000000 //truncate to this precision and store remainder
-},
-
-/* Module that monitors the submitted block maturities and manages rounds. Confirmed
-   blocks mark the end of a round where workers' balances are increased in proportion
-   to their shares. */
-"blockUnlocker": {
-    "enabled": true,
-    "interval": 30, //how often to check block statuses in seconds
-
-    /* Block depth required for a block to unlocked/mature. Found in daemon source as
-       the variable CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW */
-    "depth": 60,
-    "poolFee": 1.8, //1.8% pool fee (2% total fee total including donations)
-    "devDonation": 0.1, //0.1% donation to send to pool dev - only works with Monero
-    "coreDevDonation": 0.1 //0.1% donation to send to core devs - works with Bytecoin, Monero, Dashcoin, QuarazCoin, Fantoncoin, AEON and OneEvilCoin
-},
-
-/* AJAX API used for front-end website. */
-"api": {
-    "enabled": true,
-    "hashrateWindow": 600, //how many second worth of shares used to estimate hash rate
-    "updateInterval": 3, //gather stats and broadcast every this many seconds
-    "host": "127.0.0.1", //if api module is running on a different host (i.e, containerized),
-    "port": 8117,
-    "blocks": 30, //amount of blocks to send at a time
-    "payments": 30, //amount of payments to send at a time
-    "password": "test" //password required for admin stats
-},
-
-/* Coin daemon connection details. */
-"daemon": {
-    "host": "127.0.0.1",
-    "port": 29081
-},
-
-/* Wallet daemon connection details. */
-"wallet": {
-    "host": "127.0.0.1",
-    "port": 29082,
-    "password": "<replace with rpc password>"
-},
-
-/* Redis connection into. */
-"redis": {
-    "host": "127.0.0.1",
-    "port": 6379
+  }
 }
-
-/* Monitoring RPC services. Statistics will be displayed in Admin panel */
-"monitoring": {
-    "daemon": {
-        "checkInterval": 60, //interval of sending rpcMethod request
-        "rpcMethod": "getblockcount" //RPC method name
-    },
-    "wallet": {
-        "checkInterval": 60,
-        "rpcMethod": "get_address_count"
-    }
-
-/* Collect pool statistics to display in frontend charts  */
-"charts": {
-    "pool": {
-        "hashrate": {
-            "enabled": true, //enable data collection and chart displaying in frontend
-            "updateInterval": 60, //how often to get current value
-            "stepInterval": 1800, //chart step interval calculated as average of all updated values
-            "maximumPeriod": 86400 //chart maximum periods (chart points number = maximumPeriod / stepInterval = 48)
-        },
-        "workers": {
-            "enabled": true,
-            "updateInterval": 60,
-            "stepInterval": 1800, //chart step interval calculated as maximum of all updated values
-            "maximumPeriod": 86400
-        },
-        "difficulty": {
-            "enabled": true,
-            "updateInterval": 1800,
-            "stepInterval": 10800,
-            "maximumPeriod": 604800
-        },
-        "price": { //USD price of one currency coin received from cryptonator.com/api
-            "enabled": true,
-            "updateInterval": 1800,
-            "stepInterval": 10800,
-            "maximumPeriod": 604800
-        },
-        "profit": { //Reward * Rate / Difficulty
-            "enabled": true,
-            "updateInterval": 1800,
-            "stepInterval": 10800,
-            "maximumPeriod": 604800
-        }
-    },
-    "user": { //chart data displayed in user stats block
-        "hashrate": {
-            "enabled": true,
-            "updateInterval": 180,
-            "stepInterval": 1800,
-            "maximumPeriod": 86400
-        },
-        "payments": { //payment chart uses all user payments data stored in DB
-            "enabled": true
-        }
-    }
 ```
 
-#### 3) [Optional] Configure cryptonote-easy-miner for your pool
-Your miners that are Windows users can use [cryptonote-easy-miner](https://github.com/zone117x/cryptonote-easy-miner)
-which will automatically generate their wallet address and start up multiple threads of simpleminer. You can download
-it and edit the `config.ini` file to point to your own pool.
-Inside the `easyminer` folder, edit `config.init` to point to your pool details
-```ini
-pool_host=example.com
-pool_port=5555
-```
+The genesis hashes must come from the respective core repositories. They are used to build the auxiliary merged-mining buffer; they are not arbitrary labels.
 
-Rezip and upload to your server or a file host. Then change the `easyminerDownload` link in your `config.json` file to
-point to your zip file.
+Merged mining does not create a second miner job stream. Miners solve normal DEGO work. For each valid parent share, the pool checks whether the same proof also satisfies the current WRKZ child target. If it does, the pool submits a WRKZ block. This keeps the miner protocol compatible with existing DEGO miners.
 
-#### 4) Start the pool
+Miner address rules:
+
+- DEGO-only miner: `-u YOUR_DEGO_ADDRESS -p x`
+- DEGO plus WRKZ merged mining: `-u YOUR_DEGO_ADDRESS -p YOUR_WRKZ_ADDRESS`
+
+If the password is not a valid WRKZ address, the miner is accepted for DEGO only and excluded from WRKZ accounting.
+
+## Running The Pool
+
+Start every enabled module:
 
 ```bash
-node init.js
+node init.js -config=config.json
 ```
 
-The file `config.json` is used by default but a file can be specified using the `-config=file` command argument, for example:
+Run one module only:
 
 ```bash
-node init.js -config=config_backup.json
+node init.js -config=config.json -module=pool
+node init.js -config=config.json -module=api
+node init.js -config=config.json -module=unlocker
+node init.js -config=config.json -module=payments
+node init.js -config=config.json -module=chartsDataCollector
 ```
 
-This software contains four distinct modules:
-* `pool` - Which opens ports for miners to connect and processes shares
-* `api` - Used by the website to display network, pool and miners' data
-* `unlocker` - Processes block candidates and increases miners' balances when blocks are unlocked
-* `payments` - Sends out payments to miners according to their balances stored in redis
+The main modules are:
 
+- `pool`: mining ports, jobs, shares, parent block submission, child block checks.
+- `api`: dashboard/API data.
+- `unlocker`: block maturity and balance crediting.
+- `payments`: DEGO and child payment processing.
+- `chartsDataCollector`: chart snapshots.
 
-By default, running the `init.js` script will start up all four modules. You can optionally have the script start
-only start a specific module by using the `-module=name` command argument, for example:
+## Docker
 
-```bash
-node init.js -module=api
-```
-
-[Example screenshot](http://i.imgur.com/SEgrI3b.png) of running the pool in single module mode with tmux.
-
-#### Running the pool with Docker
-
-The Docker image uses Node.js 24 LTS, installs dependencies inside the image
-with `npm ci --ignore-scripts`, then runs `node scripts/patch-native-addons.js`
-to patch and rebuild the native addons for the container runtime. Host
-`node_modules` is ignored by `.dockerignore`.
-
-Build and test the image:
+The supplied image uses Node.js 22:
 
 ```bash
-cd /path/to/derogold-pool
 docker compose build
-docker compose run --rm pool sh -lc 'node tests/dependencyTests.js && node tests/shareReplayTests.js'
-```
-
-Review `config.json` before starting. The supplied Compose configuration uses
-host networking so that:
-
-* miners can reach the configured pool port (commonly `3333`);
-* the website can reach the pool API on `8117`;
-* the pool can reach Redis and locally bound daemon/wallet services through
-  `127.0.0.1`.
-
-The default DeroGold daemon RPC port is `6969`; set the daemon port in
-`config.json` to match the local daemon. Existing host Redis data is reused and
-is not stored in a separate container.
-
-Start the pool:
-
-```bash
 docker compose up -d
 ```
 
-The container uses the `unless-stopped` restart policy, so it starts again
-after a Docker host reboot and restarts after an unexpected exit.
+The Compose file mounts local `config.json` into the container and uses host networking so the pool can reach local Redis, daemon RPC, and wallet-api services on `127.0.0.1`.
 
-Common operations:
+Useful operations:
 
 ```bash
-# Follow pool output
-docker compose logs -f pool
-
-# Show container status
 docker compose ps
-
-# Restart the pool
+docker compose logs -f pool
 docker compose restart pool
-
-# Stop and remove the pool container
 docker compose down
-
-# Start it again
-docker compose up -d
 ```
 
-After changing native addon patches or dependencies, rebuild and recreate the
-image:
+After native dependency or patch changes:
 
 ```bash
 docker compose build --no-cache
 docker compose up -d --force-recreate
 ```
 
-Check the logs after every dependency or runtime change and confirm both
-accepted shares and the absence of unexpected `Bad hash` or low-difficulty
-rejections before treating the build as production-ready.
+## Wallet API
 
-#### Running wallet-api with systemd
+Run one wallet-api instance per coin. The pool opens the configured wallet file through the wallet-api using the values from `wallet` and `mergedMining.child.wallet`.
 
-The wallet payment API can be managed by systemd instead of a shell loop or
-tmux. This makes it start during boot and restart five seconds after either a
-crash or a normal unexpected exit.
-
-Create `/etc/systemd/system/derogold-wallet-api.service` using the template
-below. Replace every `REPLACE_...` value locally. Never commit the completed
-unit, RPC password, wallet file, wallet address, or other credentials to this
-repository.
-
-```ini
-[Unit]
-Description=DeroGold wallet payment API
-Wants=network-online.target
-After=network-online.target
-
-[Service]
-Type=simple
-User=REPLACE_WITH_SERVICE_USER
-Group=REPLACE_WITH_SERVICE_GROUP
-WorkingDirectory=REPLACE_WITH_ABSOLUTE_POOL_DIRECTORY
-ExecStart=/bin/bash -c 'exec REPLACE_WITH_ABSOLUTE_POOL_DIRECTORY/wallet-api -p 1337 -r REPLACE_WITH_RPC_PASSWORD --log-file wallet-api.log --log-level 2 --scan-coinbase-transactions < <(exec /usr/bin/tail -f /dev/null)'
-Restart=always
-RestartSec=5s
-TimeoutStopSec=30s
-
-[Install]
-WantedBy=multi-user.target
-```
-
-The idle `tail` keeps standard input open. This is required because
-`wallet-api` otherwise interprets systemd's closed standard input as a request
-to save and shut down.
-
-Load, enable, and start the service:
+Example DEGO wallet-api command:
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now derogold-wallet-api.service
+./wallet-api \
+  -p 1337 \
+  -r YOUR_DEGO_WALLET_API_PASSWORD \
+  --log-file wallet-api.log \
+  --log-level 2 \
+  --scan-coinbase-transactions
 ```
 
-Manage it and follow its output:
+Example WRKZ wallet-api command:
 
 ```bash
-sudo systemctl status derogold-wallet-api.service
-sudo systemctl restart derogold-wallet-api.service
-sudo systemctl stop derogold-wallet-api.service
-journalctl -u derogold-wallet-api.service -f
+./wrkz-wallet-api \
+  -p 1338 \
+  -r YOUR_WRKZ_WALLET_API_PASSWORD \
+  --log-file wrkz-wallet-api.log \
+  --log-level 2 \
+  --scan-coinbase-transactions
 ```
 
-The wallet's configured file log can also be followed from the pool directory:
+Check a wallet-api directly:
 
 ```bash
-tail -f wallet-api.log
+curl -sS -H 'X-API-KEY: YOUR_WALLET_API_PASSWORD' \
+  http://127.0.0.1:1337/status
 ```
 
+The wallet and daemon heights should match before expecting payments.
 
-#### 5) Host the front-end
+## Dashboard
 
-Simply host the contents of the `website_example` directory on file server capable of serving simple static files.
+The dashboard is static and lives in `website/`. Host it with nginx, Apache, or any static file server.
 
+Tracked `website/config.js` is a generic example. Put production values in `website/config.local.js`; that file is gitignored and loaded after `config.js`.
 
-Edit the variables in the `website_example/config.js` file to use your pool's specific configuration.
-Variable explanations:
+```bash
+cp website/config.local.js.example website/config.local.js
+```
+
+Set at least:
 
 ```javascript
-
-/* Must point to the API setup in your config.json file. */
-var api = "http://poolhost:8117";
-
-/* Pool server host to instruct your miners to point to.  */
-var poolHost = "poolhost.com";
-
-/* IRC Server and room used for embedded KiwiIRC chat. */
-var irc = "irc.freenode.net/#forknote";
-
-/* Contact email address. */
-var email = "support@poolhost.com";
-
-/* Market stat display params from https://www.cryptonator.com/widget */
-var cryptonatorWidget = ["DSH-BTC", "DSH-USD", "DSH-EUR"];
-
-/* Download link to cryptonote-easy-miner for Windows users. */
-var easyminerDownload = "https://github.com/zone117x/cryptonote-easy-miner/releases/";
-
-/* Used for front-end block links. */
-var blockchainExplorer = "http://chainradar.com/{symbol}/block/{id}";
-
-/* Used by front-end transaction links. */
-var transactionExplorer = "http://chainradar.com/{symbol}/transaction/{id}";
-
-/* Any custom CSS theme for pool frontend */
-var themeCss = "themes/default-theme.css";
-
+var api = 'https://your-pool-api.example.com/apimine'
+var api_blockexplorer = api
+var poolHost = 'your-pool.example.com'
+var stratumHost = poolHost
 ```
 
-#### 6) Customize your website
+The dashboard uses:
 
-The following files are included so that you can customize your pool website without having to make significant changes
-to `index.html` or other front-end files thus reducing the difficulty of merging updates with your own changes:
-* `custom.css` for creating your own pool style
-* `custom.js` for changing the functionality of your pool website
+- `/stats` for public pool, network, merged-mining, blocks, payments, and chart data.
+- `/miner_stats?address=...` for miner lookup.
+- `/health` for public service health.
+- `/market_prices` for optional CEXSwap prices.
+- `/admin_stats?password=...` for admin accounting.
 
+## API
 
-Then simply serve the files via nginx, Apache, Google Drive, or anything that can host static content.
+Common public endpoints:
 
+```text
+GET /stats
+GET /miner_stats?address=YOUR_DEGO_ADDRESS
+GET /health
+GET /market_prices
+```
 
-#### Upgrading
-When updating to the latest code its important to not only `git pull` the latest from this repo, but to also update
-the Node.js modules, and any config files that may have been changed.
-* Inside your pool directory (where the init.js script is) do `git pull` to get the latest code.
-* Remove the dependencies by deleting the `node_modules` directory with `rm -r node_modules`.
-* Run `npm update` to force updating/reinstalling of the dependencies.
-* Compare your `config.json` to the latest example ones in this repo or the ones in the setup instructions where each config field is explained. You may need to modify or add any new changes.
+Admin accounting:
 
-### Setting up Testnet
+```text
+GET /admin_stats?password=YOUR_API_PASSWORD
+```
 
-No cryptonote based coins have a testnet mode (yet) but you can effectively create a testnet with the following steps:
+Do not expose the admin password in frontend files unless the site is private and you understand the risk.
 
-* Open `/src/p2p/net_node.inl` and remove lines with `ADD_HARDCODED_SEED_NODE` to prevent it from connecting to mainnet (Monero example: http://git.io/0a12_Q)
-* Build the coin from source
-* You now need to run two instance of the daemon and connect them to each other (without a connection to another instance the daemon will not accept RPC requests)
-  * Run first instance with `./forknoted --p2p-bind-port 28080 --allow-local-ip`
-  * Run second instance with `./forknoted --p2p-bind-port 5011 --rpc-bind-port 5010 --add-peer 0.0.0.0:28080 --allow-local-ip`
-* You should now have a local testnet setup. The ports can be changes as long as the second instance is pointed to the first instance, obviously
+## Miner Examples
 
-*Credit to surfer43 for these instructions*
-
-
-### JSON-RPC Commands from CLI
-
-Documentation for JSON-RPC commands can be found here:
-* Daemon https://wiki.bytecoin.org/wiki/Daemon_JSON_RPC_API
-* Wallet https://wiki.bytecoin.org/wiki/Bytecoin_RPC_Wallet_API
-
-
-Curl can be used to use the JSON-RPC commands from command-line. Here is an example of calling `getblockheaderbyheight` for block 100:
+CPU XMRig-UPX style:
 
 ```bash
-curl 127.0.0.1:18081/json_rpc -d '{"method":"getblockheaderbyheight","params":{"height":100}}'
+./xmrig \
+  -o your-pool.example.com:3333 \
+  -a cn/upx2 \
+  -u YOUR_DEGO_ADDRESS \
+  -p YOUR_WRKZ_ADDRESS
 ```
 
+DEGO-only compatibility:
 
-### Monitoring Your Pool
-
-* To inspect and make changes to redis I suggest using [redis-commander](https://github.com/joeferner/redis-commander)
-* To monitor server load for CPU, Network, IO, etc - I suggest using [New Relic](http://newrelic.com/)
-* To keep your pool node script running in background, logging to file, and automatically restarting if it crashes - I suggest using [forever](https://github.com/nodejitsu/forever)
-
-
-### Configuring Blockchain Explorer
-
-You need the latest stable version of Forknote for the blockchain explorer - [forknote releases](https://github.com/forknote/forknote/releases)
-* Add the following code to the coin's config file:
-
-```
-rpc-bind-ip=0.0.0.0
-enable-blockchain-indexes=1
-enable-cors=*
+```bash
+./xmrig \
+  -o your-pool.example.com:3333 \
+  -a cn/upx2 \
+  -u YOUR_DEGO_ADDRESS \
+  -p x
 ```
 
-* Launch forknoted with the corresponding config file
-* Change the following line in the pool's frontend config.js:
+A fixed difficulty can be requested by suffixing the DEGO login if `poolServer.fixedDiff.enabled` is true:
 
-```
-var api_blockexplorer = "http://daemonhost.com:1118";
-```
-
-* Finally, edit these variables in the pool's frontend config.js using this syntax:
-
-```
-var blockchainExplorer = 'http://poolhost/?hash={id}#blockchain_block'
-
-var transactionExplorer = 'http://poolhost/?hash={id}#blockchain_transaction'
+```bash
+./xmrig \
+  -o your-pool.example.com:3333 \
+  -a cn/upx2 \
+  -u YOUR_DEGO_ADDRESS.300000 \
+  -p YOUR_WRKZ_ADDRESS
 ```
 
-Credits
-===
+Use a starting difficulty high enough for your miner fleet. Very low difficulty can flood an old CryptoNote pool with low-value shares.
 
-* [LucasJones](//github.com/LucasJones) - Co-dev on this project; did tons of debugging for binary structures and fixing them. Pool couldn't have been made without him.
-* [surfer43](//github.com/iamasupernova) - Did lots of testing during development to help figure out bugs and get them fixed
-* [wallet42](http://moneropool.com) - Funded development of payment denominating and min threshold feature
-* [Wolf0](https://bitcointalk.org/index.php?action=profile;u=80740) - Helped try to deobfuscate some of the daemon code for getting a bug fixed
-* [Tacotime](https://bitcointalk.org/index.php?action=profile;u=19270) - helping with figuring out certain problems and lead the bounty for this project's creation
-* [fancoder](https://github.com/fancoder/) - See his repo for the changes
-* [TurtleCoin](https://github.com/turtlecoin) - The home of where our journey started
-* [uPlexa](https://github.com/uPlexa) - uPlexa GitHub repositories
-* [DeroGold](https://github.com/derogold) - DeroGold GitHub repositories
+## Tests
 
-License
--------
-Released under the GNU General Public License v2
+Run the native dependency vectors:
 
-http://www.gnu.org/licenses/gpl-2.0.html
+```bash
+npm ci --ignore-scripts
+node scripts/patch-native-addons.js
+node tests/dependencyTests.js
+```
+
+Run the share replay harness:
+
+```bash
+node tests/shareReplayTests.js
+```
+
+Run merged-mining and payment planner tests:
+
+```bash
+node tests/mergedMiningTests.js
+node tests/paymentPlannerTests.js
+```
+
+Run the package test command:
+
+```bash
+npm test
+```
+
+`npm test` reinstalls dependencies with `npm install --ignore-scripts`, patches native addons, then runs dependency and share replay tests.
+
+## Node 22 Native Addon Notes
+
+The share validation path depends on native hashing and CryptoNote blob conversion. Node.js 22 changed the V8/native-addon build environment enough that the pool must build patched addon sources deterministically.
+
+The historical false share-rejection investigation is documented in:
+
+```text
+docs/node22-hash-rejection-investigation.md
+```
+
+The short rule for operators is: after every dependency install, run `node scripts/patch-native-addons.js` before starting the pool.
+
+## Redis
+
+Redis keys are namespaced by `coin`, for example `DeroGold:*`. WRKZ merged mining uses a child namespace below the parent:
+
+```text
+DeroGold:mergedMining:WRKZ:*
+```
+
+The migration helper prepares copy/rename commands for cutovers:
+
+```bash
+node scripts/prepare-redis-migration.js \
+  --map OldDeroGold=DeroGold \
+  --map OldPool:mergedMining:WRKZ=DeroGold:mergedMining:WRKZ
+```
+
+Read `docs/production-redis-migration.md` before using it on production data. Always back up Redis first.
+
+## Operations Checklist
+
+Before production start:
+
+- Daemon is synced and mining RPC returns block templates.
+- Wallet-api is running for each payment-enabled coin.
+- Wallet status height matches daemon/network height.
+- Redis is reachable and protected from public access.
+- `config.json` has real local values and is not committed.
+- `website/config.local.js` has real public API/mining/explorer values and is not committed.
+- `npm ci --ignore-scripts` and `node scripts/patch-native-addons.js` completed.
+- Regression tests pass.
+- Pool logs show accepted shares and no unexpected `Bad hash` pattern.
+- `/health` reports API, pool, daemon, and payment services as `ok`.
+
+Useful checks:
+
+```bash
+curl -sS http://127.0.0.1:8117/stats
+curl -sS http://127.0.0.1:8117/health
+docker compose logs -f pool
+redis-cli ping
+```
+
+## Security
+
+- Never commit production `config.json`, `website/config.local.js`, wallet files, wallet-api passwords, exchange API keys, or private deployment hostnames.
+- Bind Redis locally or protect it with firewall rules.
+- Bind wallet-api locally unless you have a specific protected network design.
+- Treat `/admin_stats` as private because it exposes accounting totals.
+- Keep daemon block-explorer-expensive RPC flags disabled unless explicitly needed.
+
+## Credits
+
+Original pool lineage and contributors include the CryptoNote Node.js pool, Forknote, TurtleCoin, uPlexa, and the DeroGold maintainers.
+
+Current DeroGold maintenance and merged-mining work lives under the DeroGold GitHub organization:
+
+```text
+https://github.com/derogold
+```
+
+## License
+
+Released under the GNU General Public License v2. See `LICENSE` for details.
