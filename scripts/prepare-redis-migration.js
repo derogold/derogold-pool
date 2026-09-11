@@ -16,6 +16,7 @@ function usage () {
     '  --config FILE             JSON file with redis and mappings fields.',
     '  --apply                   Execute writes. Without this, the tool is dry-run only.',
     '  --overwrite               Replace existing target keys when --apply is used.',
+    '  --merge-zsets             Merge existing sorted sets instead of skipping them.',
     '  --redis-url URL           Redis connection URL.',
     '  --redis-host HOST         Redis host. Default: 127.0.0.1',
     '  --redis-port PORT         Redis port. Default: 6379',
@@ -38,6 +39,7 @@ function parseArgs (argv) {
   const args = {
     apply: false,
     overwrite: false,
+    mergeZsets: false,
     redis: {
       host: '127.0.0.1',
       port: 6379,
@@ -57,6 +59,8 @@ function parseArgs (argv) {
       args.apply = true
     } else if (arg === '--overwrite') {
       args.overwrite = true
+    } else if (arg === '--merge-zsets') {
+      args.mergeZsets = true
     } else if (arg === '--map') {
       const value = requireValue(argv, ++i, '--map')
       args.mappings.push(parseMapping(value))
@@ -139,6 +143,7 @@ function mergeConfig (args, config) {
   }
   if (config.apply !== undefined) args.apply = !!config.apply
   if (config.overwrite !== undefined) args.overwrite = !!config.overwrite
+  if (config.mergeZsets !== undefined) args.mergeZsets = !!config.mergeZsets
   if (config.sample !== undefined) args.sample = parseInteger(config.sample, 'config.sample')
   if (config.showFullKeys !== undefined) args.showFullKeys = !!config.showFullKeys
   if (Array.isArray(config.mappings)) {
@@ -202,6 +207,7 @@ async function inspectMapping (client, mapping, args) {
     targetPrefix: mapping.targetPrefix,
     sourceKeys: keys.length,
     copied: 0,
+    merged: 0,
     skippedExisting: 0,
     skippedUnsupported: 0,
     errors: 0,
@@ -226,6 +232,23 @@ async function inspectMapping (client, mapping, args) {
     if (!SUPPORTED_TYPES.has(type)) {
       summary.skippedUnsupported++
       sample.action = 'skip-unsupported'
+      continue
+    }
+
+    if (exists && type === 'zset' && args.mergeZsets) {
+      if (!args.apply) {
+        sample.action = 'would-merge-zset'
+        continue
+      }
+      try {
+        await mergeZset(client, sourceKey, targetKey)
+        summary.merged++
+        sample.action = 'merged-zset'
+      } catch (e) {
+        summary.errors++
+        sample.action = 'error'
+        sample.error = e.message
+      }
       continue
     }
 
@@ -280,6 +303,16 @@ async function copyKey (client, sourceKey, targetKey, type, overwrite) {
   if (pttl > 0) await client.pExpire(targetKey, pttl)
 }
 
+async function mergeZset (client, sourceKey, targetKey) {
+  const targetType = await client.type(targetKey)
+  if (targetType !== 'zset') {
+    throw new Error('Cannot merge zset into existing ' + targetType + ' key: ' + targetKey)
+  }
+
+  const value = await client.zRangeWithScores(sourceKey, 0, -1)
+  if (value.length) await client.zAdd(targetKey, value)
+}
+
 async function main () {
   const args = parseArgs(process.argv.slice(2))
 
@@ -301,6 +334,7 @@ async function main () {
   const result = {
     mode: args.apply ? 'apply' : 'dry-run',
     overwrite: args.overwrite,
+    mergeZsets: args.mergeZsets,
     redis: {
       url: args.redis.url ? redactRedisUrl(args.redis.url) : undefined,
       host: args.redis.url ? undefined : args.redis.host,
