@@ -407,13 +407,37 @@
       $('adminStats').innerHTML = '<p class="empty">' + escapeHtml(data && data.error ? data.error : 'No admin data loaded.') + '</p>'
       return
     }
-    $('adminStats').innerHTML =
-      adminMetric('Total Owed', formatCoins(data.totalOwed, state.stats.config.symbol)) +
-      adminMetric('Total Paid', formatCoins(data.totalPaid, state.stats.config.symbol)) +
-      adminMetric('Total Mined', formatCoins(data.totalRevenue, state.stats.config.symbol)) +
-      adminMetric('Profit', formatCoins(Number(data.totalRevenue || 0) - Number(data.totalOwed || 0) - Number(data.totalPaid || 0), state.stats.config.symbol)) +
-      adminMetric('Orphan Percent', formatPercent(Number(data.blocksOrphaned || 0) / Number(data.blocksUnlocked || 1) * 100)) +
+    var coins = data.coins || {}
+    var symbols = Object.keys(coins)
+    if (!symbols.length) {
+      symbols = [state.stats.config.symbol]
+      coins[state.stats.config.symbol] = data
+    }
+    $('adminStats').innerHTML = symbols.map(function (symbol) {
+      return '<section class="admin-coin">' +
+        '<h4>' + escapeHtml(symbol) + '</h4>' +
+        '<div class="admin-stats">' +
+          renderAdminCoinStats(coins[symbol], symbol) +
+        '</div>' +
+      '</section>'
+    }).join('')
+  }
+
+  function renderAdminCoinStats(data, symbol) {
+    return adminMetric('Total Owed', formatCoins(data.totalOwed, symbol)) +
+      adminMetric('Total Paid', formatCoins(data.totalPaid, symbol)) +
+      adminMetric('Total Mined', formatCoins(data.totalRevenue, symbol)) +
+      adminMetric('Profit', formatCoins(Number(data.totalRevenue || 0) - Number(data.totalOwed || 0) - Number(data.totalPaid || 0), symbol)) +
+      adminMetric('Orphan Percent', formatPercent(adminOrphanPercent(data))) +
       adminMetric('Workers', formatNumber(data.totalWorkers))
+  }
+
+  function adminOrphanPercent(data) {
+    var orphaned = Number(data.blocksOrphaned || 0)
+    var unlocked = Number(data.blocksUnlocked || 0)
+    var total = orphaned + unlocked
+    if (!total) return 0
+    return (orphaned / total) * 100
   }
 
   function adminMetric(label, value) {

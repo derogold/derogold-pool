@@ -502,6 +502,19 @@ input:focus {
   background: var(--border);
 }
 
+.admin-coin {
+  margin-top: 16px;
+}
+
+.admin-coin:first-child {
+  margin-top: 0;
+}
+
+.admin-coin h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
 .balance-item,
 .admin-item {
   min-width: 0;
