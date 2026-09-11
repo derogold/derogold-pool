@@ -214,6 +214,7 @@
           metric('Reward', formatCoins(network.reward, entry.symbol)) +
           metric('Blocks Found', formatNumber(blocks.found)) +
           metric('Current Effort', formatPercent(blocks.currentEffortPercent)) +
+          metric('Miners', formatNumber(pool.miners)) +
           metric('Pool Fee', formatPercent(pool.fee)) +
           metric('Min Payout', formatCoins(pool.minimumPayout, entry.symbol)) +
           metric('Unlock Depth', formatNumber(pool.unlockDepth)) +
@@ -229,9 +230,9 @@
   function renderPoolTrends() {
     var charts = state.stats.charts || {}
     var trends = [
-      { key: 'difficulty', title: 'Difficulty', value: state.stats.network && state.stats.network.difficulty, formatter: formatNumber },
-      { key: 'hashrate', title: 'Pool Hashrate', value: state.stats.pool && state.stats.pool.hashrate, formatter: formatHashrate },
-      { key: 'workers', title: 'Miners', value: state.stats.pool && state.stats.pool.miners, formatter: formatNumber }
+      { key: 'difficulty', title: 'Difficulty' },
+      { key: 'hashrate', title: 'Pool Hashrate' },
+      { key: 'workers', title: 'Miners' }
     ]
 
     $('poolTrendGrid').innerHTML = trends.map(function (trend) {
@@ -239,7 +240,6 @@
       return '<section class="trend-card">' +
         '<div class="trend-header">' +
           '<div><h3>' + escapeHtml(trend.title) + '</h3><span>' + escapeHtml(chartPeriodLabel(points)) + '</span></div>' +
-          '<strong>' + escapeHtml(trend.formatter(trend.value)) + '</strong>' +
         '</div>' +
         (points.length > 1
           ? '<canvas class="trend-chart" data-chart-key="' + escapeAttr(trend.key) + '" width="320" height="92"></canvas>'

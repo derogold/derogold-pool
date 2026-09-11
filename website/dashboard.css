@@ -360,13 +360,6 @@ input {
   font-size: 12px;
 }
 
-.trend-header strong {
-  color: var(--primary-dark);
-  font-size: 14px;
-  text-align: right;
-  white-space: nowrap;
-}
-
 .trend-chart,
 .trend-empty {
   display: block;
