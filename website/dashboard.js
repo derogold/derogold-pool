@@ -162,7 +162,7 @@
   function formatDate(value) {
     var number = Number(value)
     if (!isFinite(number) || number <= 0) return '-'
-    return new Date(number * 1000).toLocaleString()
+    return new Date(number * 1000).toISOString().replace('T', ' ').replace('.000Z', ' UTC')
   }
 
   function shortHash(value) {
