@@ -122,6 +122,7 @@
       "coin": "WrkzCoin",
       "symbol": "WRKZ",
       "coinDifficultyTarget": 60,
+      "unlockDepth": 40,
       "poolFee": null,
       "finderRewardPercent": null,
       "poolAddress": "YOUR_WRKZ_POOL_WALLET_ADDRESS",
