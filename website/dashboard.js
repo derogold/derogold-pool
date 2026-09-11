@@ -234,7 +234,7 @@
       })
     })
     $('recentBlocksRows').innerHTML = rows.length ? rows.map(function (row) {
-      return '<tr><td>' + escapeHtml(row.symbol) + '</td><td>' + escapeHtml(formatNumber(row.height)) + '</td><td>' + statusBadge(row.status) + '</td><td>' + escapeHtml(row.effort) + '</td><td>' + escapeHtml(formatDate(row.time)) + '</td></tr>'
+      return '<tr class="' + blockRowClass(row.status) + '"><td>' + escapeHtml(row.symbol) + '</td><td>' + escapeHtml(formatNumber(row.height)) + '</td><td>' + statusBadge(row.status) + '</td><td>' + escapeHtml(row.effort) + '</td><td>' + escapeHtml(formatDate(row.time)) + '</td></tr>'
     }).join('') : emptyRow(5)
   }
 
@@ -249,6 +249,10 @@
     return '<span class="badge ' + type + '">' + escapeHtml(status) + '</span>'
   }
 
+  function blockRowClass(status) {
+    return status === 'orphaned' ? 'block-row-orphaned' : ''
+  }
+
   function blockEffort(block) {
     if (block.effortPercent !== undefined && block.effortPercent !== null) return formatPercent(block.effortPercent)
     var work = block.shareDifficulty || block.shares
@@ -261,7 +265,7 @@
     var blocks = entry && entry.data.blocks ? entry.data.blocks.latest || [] : []
     $('blocksRows').innerHTML = blocks.length ? blocks.map(function (block) {
       var status = blockStatus(block)
-      return '<tr>' +
+      return '<tr class="' + blockRowClass(status) + '">' +
         '<td>' + escapeHtml(formatNumber(block.height)) + '</td>' +
         '<td>' + statusBadge(status) + '</td>' +
         '<td>' + escapeHtml(formatNumber(block.difficulty)) + '</td>' +

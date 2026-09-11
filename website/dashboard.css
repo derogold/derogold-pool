@@ -359,6 +359,14 @@ tbody tr:last-child td {
   border-bottom: 0;
 }
 
+tbody tr.block-row-orphaned td {
+  background: #fff7f7;
+}
+
+tbody tr.block-row-orphaned td:first-child {
+  border-left: 3px solid var(--danger);
+}
+
 .hash,
 .mono {
   max-width: 300px;
