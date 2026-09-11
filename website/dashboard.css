@@ -502,16 +502,32 @@ input:focus {
   background: var(--border);
 }
 
+.admin-accounting {
+  display: grid;
+  gap: 16px;
+}
+
 .admin-coin {
-  margin-top: 16px;
+  min-width: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
 }
 
 .admin-coin:first-child {
-  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.admin-coin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 .admin-coin h4 {
-  margin: 0 0 8px;
+  margin: 0;
   font-size: 14px;
 }
 

@@ -415,7 +415,10 @@
     }
     $('adminStats').innerHTML = symbols.map(function (symbol) {
       return '<section class="admin-coin">' +
-        '<h4>' + escapeHtml(symbol) + '</h4>' +
+        '<div class="admin-coin-header">' +
+          '<h4>' + escapeHtml(symbol) + '</h4>' +
+          '<span class="badge">' + escapeHtml(adminCoinRole(symbol)) + '</span>' +
+        '</div>' +
         '<div class="admin-stats">' +
           renderAdminCoinStats(coins[symbol], symbol) +
         '</div>' +
@@ -430,6 +433,10 @@
       adminMetric('Profit', formatCoins(Number(data.totalRevenue || 0) - Number(data.totalOwed || 0) - Number(data.totalPaid || 0), symbol)) +
       adminMetric('Orphan Percent', formatPercent(adminOrphanPercent(data))) +
       adminMetric('Workers', formatNumber(data.totalWorkers))
+  }
+
+  function adminCoinRole(symbol) {
+    return symbol === state.stats.config.symbol ? 'parent' : 'child'
   }
 
   function adminOrphanPercent(data) {
