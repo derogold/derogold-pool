@@ -77,10 +77,10 @@
           <section class="panel">
             <div class="panel-header">
               <h3>Service Health</h3>
-              <button type="button" class="button text" id="monitoringButton">Check</button>
+              <a href="#admin" data-route="admin">Admin</a>
             </div>
             <div class="health-list" id="healthList">
-              <p class="empty">Admin monitoring is available after an operator check.</p>
+              <p class="empty">Service checks are operator-only. Use the Admin view with the pool API password.</p>
             </div>
           </section>
         </div>
@@ -194,7 +194,9 @@
             <div class="panel-header">
               <h3>Monitoring</h3>
             </div>
-            <div class="health-list" id="adminHealthList"></div>
+            <div class="health-list" id="adminHealthList">
+              <p class="empty">Enter the pool API password to load service checks.</p>
+            </div>
           </section>
         </div>
       </section>

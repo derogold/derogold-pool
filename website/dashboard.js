@@ -496,14 +496,6 @@
   function bindEvents() {
     window.addEventListener('hashchange', routeFromHash)
     $('refreshButton').addEventListener('click', loadStats)
-    $('monitoringButton').addEventListener('click', function () {
-      $('healthList').innerHTML = '<p class="empty">Checking services...</p>'
-      fetchJson('/admin_monitoring')
-        .then(function (data) { renderHealth(data, 'healthList') })
-        .catch(function (error) {
-          $('healthList').innerHTML = '<p class="empty">' + escapeHtml(error.message) + '</p>'
-        })
-    })
     $('minerForm').addEventListener('submit', function (event) {
       event.preventDefault()
       var address = $('minerAddress').value.trim()
