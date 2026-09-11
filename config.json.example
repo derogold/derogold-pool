@@ -116,6 +116,10 @@
       "baseUrl": "https://cexswap.cc",
       "symbols": ["DEGO", "WRKZ"],
       "displayAmount": 1000000,
+      "displayAmounts": {
+        "DEGO": 1000000000,
+        "WRKZ": 1000000
+      },
       "cacheSeconds": 300,
       "timeoutMs": 5000
     }

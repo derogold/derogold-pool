@@ -231,19 +231,22 @@
   function renderMarket() {
     var market = state.market || {}
     var prices = market.prices || {}
-    var displayAmount = Number(market.displayAmount || 1000000)
     var dego = prices.DEGO || {}
     var wrkz = prices.WRKZ || {}
+    var degoDisplayAmount = Number(dego.displayAmount || 1000000000)
+    var wrkzDisplayAmount = Number(wrkz.displayAmount || 1000000)
 
     setText('degoMarketPrice', dego.displayUsd !== null && dego.displayUsd !== undefined ? formatUsd(dego.displayUsd) : 'Unavailable')
-    setText('wrkzMarketPrice', wrkz.usd !== null && wrkz.usd !== undefined ? formatUsd(wrkz.usd) : 'Unavailable')
+    setText('wrkzMarketPrice', wrkz.displayUsd !== null && wrkz.displayUsd !== undefined ? formatUsd(wrkz.displayUsd) : 'Unavailable')
     setText('marketUpdated', market.updated ? formatDate(market.updated) : '-')
 
     var panel = $('degoMarketPanel')
     if (panel) {
       panel.classList.toggle('is-stale', !!market.stale)
       var primaryLabel = panel.querySelector('.market-value.primary span')
-      if (primaryLabel) primaryLabel.textContent = formatCompactCoinAmount(displayAmount) + ' DEGO'
+      var wrkzLabel = panel.querySelector('.market-value:not(.primary) span')
+      if (primaryLabel) primaryLabel.textContent = formatCompactCoinAmount(degoDisplayAmount) + ' DEGO'
+      if (wrkzLabel) wrkzLabel.textContent = formatCompactCoinAmount(wrkzDisplayAmount) + ' WRKZ'
     }
   }
 
