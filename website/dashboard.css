@@ -662,9 +662,21 @@ input:focus {
   border-radius: var(--radius-lg);
 }
 
+.command-card-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .command-card h3 {
   margin: 0 0 8px;
   font-size: 16px;
+}
+
+.command-card p {
+  margin: 0;
+  color: var(--muted);
 }
 
 .command-card code {
@@ -711,12 +723,15 @@ input:focus {
   }
 
   .topbar,
-  .input-row {
+  .input-row,
+  .command-card-link {
     flex-direction: column;
+    align-items: flex-start;
   }
 
   .topbar-actions,
-  .input-row .button {
+  .input-row .button,
+  .command-card-link .button {
     width: 100%;
   }
 
