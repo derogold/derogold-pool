@@ -411,15 +411,29 @@
         '<code>xmrig -o ' + escapeHtml(configuredPoolHost) + ':' + escapeHtml(firstPort) + ' -u &lt;DEGO_ADDRESS&gt; -p ' + escapeHtml(childPass) + ' -a cryptonight-upx/2 --donate-level 0</code>' +
       '</section>' +
       '<section class="command-card">' +
+        '<h3>XMRig GPU</h3>' +
+        '<p>Use OpenCL for AMD GPUs; NVIDIA CUDA needs the official CUDA plugin.</p>' +
+        '<code>xmrig -o ' + escapeHtml(configuredPoolHost) + ':' + escapeHtml(firstPort) + ' -u &lt;DEGO_ADDRESS&gt; -p ' + escapeHtml(childPass) + ' -a cryptonight-upx/2 --opencl --donate-level 0</code>' +
+      '</section>' +
+      '<section class="command-card">' +
+        '<h3>TeamRedMiner AMD</h3>' +
+        '<p>For AMD rigs that support the Cryptonight v8 UPX2 algorithm.</p>' +
+        '<code>teamredminer -a cnv8_upx2 -o stratum+tcp://' + escapeHtml(configuredPoolHost) + ':' + escapeHtml(firstPort) + ' -u &lt;DEGO_ADDRESS&gt; -p ' + escapeHtml(childPass) + '</code>' +
+      '</section>' +
+      '<section class="command-card">' +
         '<h3>Fixed Difficulty</h3>' +
         '<code>xmrig -o ' + escapeHtml(configuredPoolHost) + ':' + escapeHtml(firstPort) + ' -u &lt;DEGO_ADDRESS&gt;.500000 -p ' + escapeHtml(childPass) + ' -a cryptonight-upx/2 --donate-level 0</code>' +
       '</section>' +
       '<section class="command-card command-card-link">' +
         '<div>' +
-          '<h3>XMRig Downloads</h3>' +
-          '<p>Get the current upstream XMRig release for CPU mining.</p>' +
+          '<h3>Miner Downloads</h3>' +
+          '<p>XMRig is unified for CPU and AMD OpenCL; NVIDIA uses the official CUDA plugin.</p>' +
         '</div>' +
-        '<a class="button secondary" target="_blank" rel="noopener" href="https://github.com/xmrig/xmrig/releases/latest">Open GitHub Releases</a>' +
+        '<div class="button-row">' +
+          '<a class="button secondary" target="_blank" rel="noopener" href="https://github.com/xmrig/xmrig/releases/latest">XMRig Releases</a>' +
+          '<a class="button secondary" target="_blank" rel="noopener" href="https://github.com/xmrig/xmrig-cuda/releases/latest">CUDA Plugin</a>' +
+          '<a class="button secondary" target="_blank" rel="noopener" href="https://github.com/todxx/teamredminer/releases/latest">TeamRedMiner</a>' +
+        '</div>' +
       '</section>'
   }
 

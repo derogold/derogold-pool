@@ -669,6 +669,13 @@ input:focus {
   gap: 16px;
 }
 
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .command-card h3 {
   margin: 0 0 8px;
   font-size: 16px;
@@ -732,6 +739,10 @@ input:focus {
   .topbar-actions,
   .input-row .button,
   .command-card-link .button {
+    width: 100%;
+  }
+
+  .button-row {
     width: 100%;
   }
 
