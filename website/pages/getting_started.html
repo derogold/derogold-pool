@@ -159,6 +159,7 @@ at your stats. The payment threshold for exchange addresses is <span id="payment
 
 
 <script>
+    var miningHost = typeof stratumHost !== 'undefined' && stratumHost ? stratumHost : poolHost;
 
     currentPage = {
         destroy: function(){
@@ -196,14 +197,14 @@ at your stats. The payment threshold for exchange addresses is <span id="payment
                 $miningPorts.empty().append($miningPortChildren);
             }
 
-            updateTextClasses('exampleHost', poolHost);
+            updateTextClasses('exampleHost', miningHost);
             updateTextClasses('examplePort', lastStats.config.ports[0].port.toString());
 
         }
     };
 
     document.getElementById('easyminer_link').setAttribute('href', easyminerDownload);
-    document.getElementById('miningPoolHost').textContent = poolHost;
+    document.getElementById('miningPoolHost').textContent = miningHost;
 
     var lastPortsJson = '';
     var $miningPorts = $('#miningPorts');
