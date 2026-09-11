@@ -531,7 +531,7 @@
     })
     $('adminForm').addEventListener('submit', function (event) {
       event.preventDefault()
-      state.adminPassword = $('adminPassword').value
+      state.adminPassword = $('adminPassword').value.trim()
       fetchJson('/admin_stats', { password: state.adminPassword }).then(renderAdminStats).catch(function (error) {
         renderAdminStats({ error: error.message })
       })
