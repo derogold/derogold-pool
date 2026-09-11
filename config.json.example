@@ -124,12 +124,30 @@
       "coinDifficultyTarget": 60,
       "poolFee": null,
       "finderRewardPercent": null,
-      "minimumPayout": null,
-      "paymentInterval": null,
       "poolAddress": "YOUR_WRKZ_POOL_WALLET_ADDRESS",
       "daemon": {
         "host": "127.0.0.1",
         "port": 17856
+      },
+      "wallet": {
+        "host": "127.0.0.1",
+        "port": 1338,
+        "password": "YOUR_WRKZ_WALLET_API_PASSWORD",
+        "filename": "/path/to/your/wrkz.wallet",
+        "walletPassword": "YOUR_WRKZ_WALLET_FILE_PASSWORD",
+        "daemonHost": "127.0.0.1",
+        "daemonPort": 17856
+      },
+      "payments": {
+        "enabled": false,
+        "interval": 120,
+        "maxAddresses": 2,
+        "transferFee": 10000,
+        "minPayment": 10000000,
+        "minPaymentIdPayment": 10000000,
+        "maxTransactionAmount": 1000000000,
+        "denomination": 100,
+        "mixin": 1
       }
     }
   },

@@ -218,7 +218,13 @@ function spawnBlockUnlocker () {
 }
 
 function spawnPaymentProcessor () {
-  if (!global.config.payments || !global.config.payments.enabled) return
+  const childPaymentsEnabled = global.config.mergedMining &&
+    global.config.mergedMining.enabled &&
+    global.config.mergedMining.child &&
+    global.config.mergedMining.child.payments &&
+    global.config.mergedMining.child.payments.enabled
+
+  if ((!global.config.payments || !global.config.payments.enabled) && !childPaymentsEnabled) return
 
   if (!cluster.isPrimary) return
   const worker = cluster.fork({
