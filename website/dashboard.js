@@ -475,7 +475,6 @@
         setStatus('ok', 'Live')
         setText('lastUpdated', 'Updated ' + new Date().toLocaleTimeString())
         render()
-        loadHealth()
       })
       .catch(function (error) {
         setStatus('fail', 'Offline')
@@ -522,10 +521,6 @@
   function bindEvents() {
     window.addEventListener('hashchange', routeFromHash)
     $('refreshButton').addEventListener('click', loadStats)
-    $('healthButton').addEventListener('click', function () {
-      $('healthList').innerHTML = '<p class="empty">Checking public service status...</p>'
-      loadHealth()
-    })
     $('minerForm').addEventListener('submit', function (event) {
       event.preventDefault()
       var address = $('minerAddress').value.trim()
@@ -583,5 +578,7 @@
   bindEvents()
   routeFromHash()
   loadStats()
+  loadHealth()
   window.setInterval(loadStats, 30000)
+  window.setInterval(loadHealth, 60000)
 })()
