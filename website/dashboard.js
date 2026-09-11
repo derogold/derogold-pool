@@ -228,7 +228,7 @@
           symbol: entry.symbol,
           height: block.height,
           status: blockStatus(block),
-          effort: block.shares && block.difficulty ? formatPercent((block.shares / block.difficulty) * 100) : '-',
+          effort: blockEffort(block),
           time: block.timestamp || block.time
         })
       })
@@ -249,6 +249,12 @@
     return '<span class="badge ' + type + '">' + escapeHtml(status) + '</span>'
   }
 
+  function blockEffort(block) {
+    if (block.effortPercent !== undefined && block.effortPercent !== null) return formatPercent(block.effortPercent)
+    var work = block.shareDifficulty || block.shares
+    return work && block.difficulty ? formatPercent((work / block.difficulty) * 100) : '-'
+  }
+
   function renderBlocks() {
     renderCoinTabs('blocksTabs', 'data-block-coin', state.activeBlockCoin)
     var entry = coinEntries().filter(function (item) { return item.symbol === state.activeBlockCoin })[0] || coinEntries()[0]
@@ -260,10 +266,11 @@
         '<td>' + statusBadge(status) + '</td>' +
         '<td>' + escapeHtml(formatNumber(block.difficulty)) + '</td>' +
         '<td>' + escapeHtml(formatNumber(block.shareDifficulty)) + '</td>' +
+        '<td>' + escapeHtml(blockEffort(block)) + '</td>' +
         '<td>' + linkHash(entry.symbol, 'block', block.hash) + '</td>' +
         '<td>' + escapeHtml(formatDate(block.timestamp || block.time)) + '</td>' +
       '</tr>'
-    }).join('') : emptyRow(6)
+    }).join('') : emptyRow(7)
   }
 
   function parsePayment(time, raw) {
