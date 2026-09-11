@@ -113,6 +113,20 @@
     "host": "127.0.0.1",
     "port": 7979
   },
+  "mergedMining": {
+    "enabled": false,
+    "parentGenesisHash": "DEROGOLD_GENESIS_BLOCK_HASH",
+    "childGenesisHash": "WRKZCOIN_GENESIS_BLOCK_HASH",
+    "child": {
+      "coin": "WrkzCoin",
+      "symbol": "WRKZ",
+      "poolAddress": "YOUR_WRKZ_POOL_WALLET_ADDRESS",
+      "daemon": {
+        "host": "127.0.0.1",
+        "port": 17856
+      }
+    }
+  },
   "wallet": {
     "host": "127.0.0.1",
     "port": 1337,
