@@ -1,0 +1,17 @@
+// Optional local dashboard override. Save as website/config.local.js for
+// machine-specific preview/deployment values; that file is gitignored.
+window.poolDashboardConfig = {
+  apiBase: 'http://100.92.202.75:8117',
+  stratumHost: '100.92.202.75',
+  blockchainExplorer: 'https://explorer.derogold.online/block/{id}',
+  transactionExplorer: 'https://explorer.derogold.online/tx/{id}',
+  childExplorers: {
+    WRKZ: {
+      block: 'https://explorer.wrkz.work/#/block/{id}',
+      tx: 'https://explorer.wrkz.work/#/tx/{id}'
+    }
+  },
+  childCoinUnits: {
+    WRKZ: 100
+  }
+}

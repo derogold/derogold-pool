@@ -35,3 +35,12 @@ var networkStat = {
     ['democats.org', 'http://pool.democats.org:7603']
   ]
 }
+
+window.poolDashboardConfig = {
+  apiBase: api,
+  stratumHost: stratumHost,
+  blockchainExplorer: blockchainExplorer,
+  transactionExplorer: transactionExplorer,
+  childExplorers: childExplorers,
+  childCoinUnits: childCoinUnits
+}

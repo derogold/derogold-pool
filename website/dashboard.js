@@ -11,12 +11,21 @@
   }
 
   var queryParams = new URLSearchParams(window.location.search)
-  var apiBase = stripTrailingSlash(queryParams.get('api') || window.api || '')
-  var configuredPoolHost = queryParams.get('stratumHost') || window.stratumHost || window.miningHost || window.poolHost || window.location.hostname
-  var parentExplorer = window.blockchainExplorer || ''
-  var parentTransactionExplorer = window.transactionExplorer || ''
-  var childExplorers = window.childExplorers || {}
-  var configuredChildCoinUnits = window.childCoinUnits || {}
+  var dashboardConfig = window.poolDashboardConfig || {}
+  var apiBase = stripTrailingSlash(queryParams.get('api') || dashboardConfig.apiBase || dashboardConfig.api || window.api || '')
+  var configuredPoolHost = queryParams.get('stratumHost') ||
+    queryParams.get('miningHost') ||
+    dashboardConfig.stratumHost ||
+    dashboardConfig.miningHost ||
+    dashboardConfig.poolHost ||
+    window.stratumHost ||
+    window.miningHost ||
+    window.poolHost ||
+    window.location.hostname
+  var parentExplorer = dashboardConfig.blockchainExplorer || window.blockchainExplorer || ''
+  var parentTransactionExplorer = dashboardConfig.transactionExplorer || window.transactionExplorer || ''
+  var childExplorers = dashboardConfig.childExplorers || window.childExplorers || {}
+  var configuredChildCoinUnits = dashboardConfig.childCoinUnits || window.childCoinUnits || {}
 
   var titles = {
     overview: ['Overview', 'Live pool, network, merged-mining, and payout state.'],
