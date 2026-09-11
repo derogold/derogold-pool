@@ -110,6 +110,16 @@
     "payments": 30,
     "password": "YOUR_API_PASSWORD"
   },
+  "market": {
+    "cexswap": {
+      "enabled": true,
+      "baseUrl": "https://cexswap.cc",
+      "symbols": ["DEGO", "WRKZ"],
+      "displayAmount": 1000000,
+      "cacheSeconds": 300,
+      "timeoutMs": 5000
+    }
+  },
   "daemon": {
     "host": "127.0.0.1",
     "port": 7979

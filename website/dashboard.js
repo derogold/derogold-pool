@@ -3,6 +3,7 @@
 
   var state = {
     stats: null,
+    market: null,
     route: 'overview',
     activeBlockCoin: '',
     activePaymentCoin: '',
@@ -108,6 +109,20 @@
     return number.toFixed(2) + '%'
   }
 
+  function formatUsd(value) {
+    var number = Number(value)
+    if (!isFinite(number)) return '-'
+    if (number > 0 && number < 0.01) {
+      return '$' + number.toPrecision(4)
+    }
+    return number.toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: number >= 1 ? 2 : 4,
+      maximumFractionDigits: number >= 1 ? 2 : 8
+    })
+  }
+
   function formatDate(value) {
     var number = Number(value)
     if (!isFinite(number) || number <= 0) return '-'
@@ -210,6 +225,34 @@
     }).join('')
 
     renderRecentBlocks()
+    renderMarket()
+  }
+
+  function renderMarket() {
+    var market = state.market || {}
+    var prices = market.prices || {}
+    var displayAmount = Number(market.displayAmount || 1000000)
+    var dego = prices.DEGO || {}
+    var wrkz = prices.WRKZ || {}
+
+    setText('degoMarketPrice', dego.displayUsd !== null && dego.displayUsd !== undefined ? formatUsd(dego.displayUsd) : 'Unavailable')
+    setText('wrkzMarketPrice', wrkz.usd !== null && wrkz.usd !== undefined ? formatUsd(wrkz.usd) : 'Unavailable')
+    setText('marketUpdated', market.updated ? formatDate(market.updated) : '-')
+
+    var panel = $('degoMarketPanel')
+    if (panel) {
+      panel.classList.toggle('is-stale', !!market.stale)
+      var primaryLabel = panel.querySelector('.market-value.primary span')
+      if (primaryLabel) primaryLabel.textContent = formatCompactCoinAmount(displayAmount) + ' DEGO'
+    }
+  }
+
+  function formatCompactCoinAmount(value) {
+    var number = Number(value)
+    if (!isFinite(number)) return '1M'
+    if (number >= 1000000 && number % 1000000 === 0) return (number / 1000000) + 'M'
+    if (number >= 1000 && number % 1000 === 0) return (number / 1000) + 'K'
+    return formatNumber(number)
   }
 
   function metric(label, value) {
@@ -515,6 +558,18 @@
       })
   }
 
+  function loadMarketPrices() {
+    return fetchJson('/market_prices')
+      .then(function (market) {
+        state.market = market
+        renderMarket()
+      })
+      .catch(function () {
+        state.market = { prices: {} }
+        renderMarket()
+      })
+  }
+
   function loadPayments(symbol) {
     fetchJson('/get_payments', { coin: symbol, time: 9999999999 })
       .then(function (payments) {
@@ -553,7 +608,10 @@
 
   function bindEvents() {
     window.addEventListener('hashchange', routeFromHash)
-    $('refreshButton').addEventListener('click', loadStats)
+    $('refreshButton').addEventListener('click', function () {
+      loadStats()
+      loadMarketPrices()
+    })
     $('minerForm').addEventListener('submit', function (event) {
       event.preventDefault()
       var address = $('minerAddress').value.trim()
@@ -612,6 +670,8 @@
   routeFromHash()
   loadStats()
   loadHealth()
+  loadMarketPrices()
   window.setInterval(loadStats, 30000)
   window.setInterval(loadHealth, 60000)
+  window.setInterval(loadMarketPrices, 300000)
 })()
