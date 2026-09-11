@@ -406,13 +406,6 @@
     var child = coinEntries().filter(function (entry) { return entry.data.role === 'child' })[0]
     var childPass = child ? '<WRKZ_ADDRESS>' : 'x'
     $('commandList').innerHTML =
-      '<section class="command-card command-card-link">' +
-        '<div>' +
-          '<h3>XMRig Downloads</h3>' +
-          '<p>Get the current upstream XMRig release for CPU mining.</p>' +
-        '</div>' +
-        '<a class="button secondary" target="_blank" rel="noopener" href="https://github.com/xmrig/xmrig/releases/latest">Open GitHub Releases</a>' +
-      '</section>' +
       '<section class="command-card">' +
         '<h3>XMRig CPU</h3>' +
         '<code>xmrig -o ' + escapeHtml(configuredPoolHost) + ':' + escapeHtml(firstPort) + ' -u &lt;DEGO_ADDRESS&gt; -p ' + escapeHtml(childPass) + ' -a cryptonight-upx/2 --donate-level 0</code>' +
@@ -420,6 +413,13 @@
       '<section class="command-card">' +
         '<h3>Fixed Difficulty</h3>' +
         '<code>xmrig -o ' + escapeHtml(configuredPoolHost) + ':' + escapeHtml(firstPort) + ' -u &lt;DEGO_ADDRESS&gt;.500000 -p ' + escapeHtml(childPass) + ' -a cryptonight-upx/2 --donate-level 0</code>' +
+      '</section>' +
+      '<section class="command-card command-card-link">' +
+        '<div>' +
+          '<h3>XMRig Downloads</h3>' +
+          '<p>Get the current upstream XMRig release for CPU mining.</p>' +
+        '</div>' +
+        '<a class="button secondary" target="_blank" rel="noopener" href="https://github.com/xmrig/xmrig/releases/latest">Open GitHub Releases</a>' +
       '</section>'
   }
 
