@@ -398,7 +398,7 @@
         '<td class="mono">' + escapeHtml(configuredPoolHost) + '</td>' +
         '<td>' + escapeHtml(port.port) + '</td>' +
         '<td>' + escapeHtml(formatNumber(port.difficulty)) + '</td>' +
-        '<td>' + escapeHtml(port.desc || '-') + '</td>' +
+        '<td>' + escapeHtml(connectPortDescription(port)) + '</td>' +
       '</tr>'
     }).join('') : emptyRow(4)
 
@@ -414,6 +414,17 @@
         '<h3>Fixed Difficulty</h3>' +
         '<code>xmrig -o ' + escapeHtml(configuredPoolHost) + ':' + escapeHtml(firstPort) + ' -u &lt;DEGO_ADDRESS&gt;.500000 -p ' + escapeHtml(childPass) + ' -a cryptonight-upx/2 --donate-level 0</code>' +
       '</section>'
+  }
+
+  function connectPortDescription(port) {
+    var configured = String(port.desc || '').trim()
+    if (configured && !/test|dev|local|payment/i.test(configured)) return configured
+
+    var difficulty = Number(port.difficulty || 0)
+    if (difficulty >= 1000000) return 'High hashrate miners and rented hash'
+    if (difficulty >= 300000) return 'Recommended for modern CPU miners'
+    if (difficulty >= 100000) return 'Balanced starting port'
+    return 'Light miners and first connection tests'
   }
 
   function renderMiner(data) {
