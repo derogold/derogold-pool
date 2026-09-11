@@ -1,0 +1,495 @@
+(function () {
+  'use strict'
+
+  var state = {
+    stats: null,
+    route: 'overview',
+    activeBlockCoin: '',
+    activePaymentCoin: '',
+    adminPassword: ''
+  }
+
+  var queryParams = new URLSearchParams(window.location.search)
+  var apiBase = stripTrailingSlash(queryParams.get('api') || window.api || '')
+  var configuredPoolHost = queryParams.get('stratumHost') || window.stratumHost || window.miningHost || window.poolHost || window.location.hostname
+  var parentExplorer = window.blockchainExplorer || ''
+  var parentTransactionExplorer = window.transactionExplorer || ''
+  var childExplorers = window.childExplorers || {}
+  var configuredChildCoinUnits = window.childCoinUnits || {}
+
+  var titles = {
+    overview: ['Overview', 'Live pool, network, merged-mining, and payout state.'],
+    miner: ['Miner', 'Balances, payments, payout address, and hashrate for a DEGO mining address.'],
+    blocks: ['Blocks', 'Confirmed, pending, orphaned, and child submitted blocks.'],
+    payments: ['Payments', 'Pool payment history by coin.'],
+    connect: ['Connect', 'Current ports and miner command templates.'],
+    admin: ['Admin', 'Operator-only pool accounting and service checks.']
+  }
+
+  function $(id) {
+    return document.getElementById(id)
+  }
+
+  function stripTrailingSlash(value) {
+    return String(value || '').replace(/\/+$/, '')
+  }
+
+  function apiUrl(path, params) {
+    var query = ''
+    if (params) {
+      query = Object.keys(params)
+        .filter(function (key) { return params[key] !== undefined && params[key] !== null && params[key] !== '' })
+        .map(function (key) { return encodeURIComponent(key) + '=' + encodeURIComponent(params[key]) })
+        .join('&')
+    }
+    return apiBase + path + (query ? '?' + query : '')
+  }
+
+  function fetchJson(path, params) {
+    return window.fetch(apiUrl(path, params), { cache: 'no-store' })
+      .then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status)
+        return response.json()
+      })
+  }
+
+  function setText(id, value) {
+    var node = $(id)
+    if (node) node.textContent = value
+  }
+
+  function setStatus(kind, text) {
+    var node = $('apiStatus')
+    node.className = 'status-chip ' + kind
+    node.textContent = text
+  }
+
+  function formatNumber(value) {
+    var number = Number(value)
+    if (!isFinite(number)) return '-'
+    return new Intl.NumberFormat('en-US').format(number)
+  }
+
+  function formatHashrate(value) {
+    var number = Number(value)
+    if (!isFinite(number)) return '-'
+    var units = ['H/s', 'KH/s', 'MH/s', 'GH/s', 'TH/s']
+    var index = 0
+    while (number >= 1000 && index < units.length - 1) {
+      number = number / 1000
+      index++
+    }
+    return number.toFixed(number >= 100 ? 0 : 2) + ' ' + units[index]
+  }
+
+  function coinUnits(symbol) {
+    if (symbol === state.stats.config.symbol) return Number(state.stats.config.coinUnits || 1)
+    if (configuredChildCoinUnits[symbol]) return Number(configuredChildCoinUnits[symbol])
+    var coin = state.stats.coins && state.stats.coins[symbol]
+    var coinUnits = coin && coin.pool && coin.pool.coinUnits
+    if (coinUnits) return Number(coinUnits)
+    return Number(state.stats.config.coinUnits || 1)
+  }
+
+  function formatCoins(value, symbol) {
+    var number = Number(value)
+    var units = coinUnits(symbol)
+    if (!isFinite(number) || !units) return '-'
+    var decimals = units === 100 ? 2 : Math.min(String(units).length - 1, 8)
+    return (number / units).toLocaleString('en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    }) + ' ' + symbol
+  }
+
+  function formatPercent(value) {
+    var number = Number(value)
+    if (!isFinite(number)) return '-'
+    return number.toFixed(2) + '%'
+  }
+
+  function formatDate(value) {
+    var number = Number(value)
+    if (!isFinite(number) || number <= 0) return '-'
+    return new Date(number * 1000).toLocaleString()
+  }
+
+  function shortHash(value) {
+    if (!value) return '-'
+    var text = String(value)
+    if (text.length <= 18) return text
+    return text.slice(0, 10) + '...' + text.slice(-8)
+  }
+
+  function explorerUrl(symbol, type, id) {
+    var template = symbol === state.stats.config.symbol
+      ? (type === 'tx' ? parentTransactionExplorer : parentExplorer)
+      : childExplorers[symbol] && childExplorers[symbol][type]
+
+    if (!template) return ''
+    return template.replace('{symbol}', String(symbol).toLowerCase()).replace('{id}', id)
+  }
+
+  function linkHash(symbol, type, id) {
+    var href = explorerUrl(symbol, type, id)
+    if (!href) return escapeHtml(shortHash(id))
+    return '<a class="hash" target="_blank" rel="noopener" href="' + escapeAttr(href) + '">' + escapeHtml(shortHash(id)) + '</a>'
+  }
+
+  function escapeHtml(value) {
+    return String(value === undefined || value === null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;')
+  }
+
+  function escapeAttr(value) {
+    return escapeHtml(value)
+  }
+
+  function coinEntries() {
+    var coins = state.stats && state.stats.coins
+    if (!coins) return []
+    return Object.keys(coins).map(function (symbol) {
+      return {
+        symbol: symbol,
+        data: coins[symbol]
+      }
+    })
+  }
+
+  function render() {
+    if (!state.stats) return
+    if (!state.activeBlockCoin) state.activeBlockCoin = state.stats.config.symbol
+    if (!state.activePaymentCoin) state.activePaymentCoin = state.stats.config.symbol
+    renderRoute()
+    renderOverview()
+    renderBlocks()
+    renderPayments()
+    renderConnect()
+  }
+
+  function renderRoute() {
+    var meta = titles[state.route] || titles.overview
+    setText('pageTitle', meta[0])
+    setText('pageSubtitle', meta[1])
+    Array.prototype.forEach.call(document.querySelectorAll('.view'), function (view) {
+      view.classList.toggle('active', view.id === 'view-' + state.route)
+    })
+    Array.prototype.forEach.call(document.querySelectorAll('[data-route]'), function (link) {
+      link.classList.toggle('active', link.getAttribute('data-route') === state.route)
+    })
+  }
+
+  function renderOverview() {
+    var root = $('coinOverview')
+    root.innerHTML = coinEntries().map(function (entry) {
+      var coin = entry.data
+      var pool = coin.pool || {}
+      var network = coin.network || {}
+      var blocks = coin.blocks || {}
+      return '<section class="coin-panel">' +
+        '<div class="coin-header">' +
+          '<div><h3>' + escapeHtml(entry.symbol) + '</h3><div class="coin-role">' + escapeHtml(coin.role || '') + '</div></div>' +
+          '<span class="badge ' + healthClass(network.height) + '">height ' + escapeHtml(formatNumber(network.height)) + '</span>' +
+        '</div>' +
+        '<div class="metric-grid">' +
+          metric('Pool Hashrate', formatHashrate(pool.hashrate)) +
+          metric('Network Hashrate', formatHashrate(network.hashrate)) +
+          metric('Difficulty', formatNumber(network.difficulty)) +
+          metric('Reward', formatCoins(network.reward, entry.symbol)) +
+          metric('Blocks Found', formatNumber(blocks.found)) +
+          metric('Current Effort', formatPercent(blocks.currentEffortPercent)) +
+          metric('Min Payout', formatCoins(pool.minimumPayout, entry.symbol)) +
+          metric('Unlock Depth', formatNumber(pool.unlockDepth)) +
+        '</div>' +
+      '</section>'
+    }).join('')
+
+    renderRecentBlocks()
+  }
+
+  function metric(label, value) {
+    return '<div class="metric"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value) + '</strong></div>'
+  }
+
+  function healthClass(value) {
+    return value ? 'ok' : 'warn'
+  }
+
+  function renderRecentBlocks() {
+    var rows = []
+    coinEntries().forEach(function (entry) {
+      var blocks = entry.data.blocks || {}
+      ;(blocks.latest || []).slice(0, 5).forEach(function (block) {
+        rows.push({
+          symbol: entry.symbol,
+          height: block.height,
+          status: blockStatus(block),
+          effort: block.shares && block.difficulty ? formatPercent((block.shares / block.difficulty) * 100) : '-',
+          time: block.timestamp || block.time
+        })
+      })
+    })
+    $('recentBlocksRows').innerHTML = rows.length ? rows.map(function (row) {
+      return '<tr><td>' + escapeHtml(row.symbol) + '</td><td>' + escapeHtml(formatNumber(row.height)) + '</td><td>' + statusBadge(row.status) + '</td><td>' + escapeHtml(row.effort) + '</td><td>' + escapeHtml(formatDate(row.time)) + '</td></tr>'
+    }).join('') : emptyRow(5)
+  }
+
+  function blockStatus(block) {
+    if (block.orphaned === true) return 'orphaned'
+    if (block.orphaned === false) return 'accepted'
+    return block.status || 'pending'
+  }
+
+  function statusBadge(status) {
+    var type = status === 'accepted' || status === 'OK' ? 'ok' : status === 'orphaned' ? 'fail' : 'warn'
+    return '<span class="badge ' + type + '">' + escapeHtml(status) + '</span>'
+  }
+
+  function renderBlocks() {
+    renderCoinTabs('blocksTabs', 'data-block-coin', state.activeBlockCoin)
+    var entry = coinEntries().filter(function (item) { return item.symbol === state.activeBlockCoin })[0] || coinEntries()[0]
+    var blocks = entry && entry.data.blocks ? entry.data.blocks.latest || [] : []
+    $('blocksRows').innerHTML = blocks.length ? blocks.map(function (block) {
+      var status = blockStatus(block)
+      return '<tr>' +
+        '<td>' + escapeHtml(formatNumber(block.height)) + '</td>' +
+        '<td>' + statusBadge(status) + '</td>' +
+        '<td>' + escapeHtml(formatNumber(block.difficulty)) + '</td>' +
+        '<td>' + escapeHtml(formatNumber(block.shareDifficulty)) + '</td>' +
+        '<td>' + linkHash(entry.symbol, 'block', block.hash) + '</td>' +
+        '<td>' + escapeHtml(formatDate(block.timestamp || block.time)) + '</td>' +
+      '</tr>'
+    }).join('') : emptyRow(6)
+  }
+
+  function parsePayment(time, raw) {
+    var parts = String(raw || '').split(':')
+    return {
+      time: Number(time),
+      hash: parts[0],
+      amount: Number(parts[1]),
+      fee: Number(parts[2]),
+      mixin: parts[3],
+      recipients: parts[4]
+    }
+  }
+
+  function paymentRows(results, symbol) {
+    var rows = []
+    for (var i = 0; i < results.length; i += 2) {
+      rows.push(parsePayment(results[i + 1], results[i]))
+    }
+    return rows.map(function (payment) {
+      return '<tr>' +
+        '<td>' + escapeHtml(formatDate(payment.time)) + '</td>' +
+        '<td>' + linkHash(symbol, 'tx', payment.hash) + '</td>' +
+        '<td>' + escapeHtml(formatCoins(payment.amount, symbol)) + '</td>' +
+        '<td>' + escapeHtml(formatCoins(payment.fee, symbol)) + '</td>' +
+        '<td>' + escapeHtml(payment.mixin || '-') + '</td>' +
+        '<td>' + escapeHtml(payment.recipients || '-') + '</td>' +
+      '</tr>'
+    }).join('')
+  }
+
+  function renderPayments() {
+    renderCoinTabs('paymentsTabs', 'data-payment-coin', state.activePaymentCoin)
+    var symbol = state.activePaymentCoin
+    var parent = state.stats.config.symbol
+    var source = symbol === parent ? state.stats.pool.payments || [] : []
+    $('paymentsRows').innerHTML = source.length ? paymentRows(source, symbol) : emptyRow(6)
+    if (symbol !== parent) loadPayments(symbol)
+  }
+
+  function renderCoinTabs(targetId, attributeName, activeSymbol) {
+    $(targetId).innerHTML = coinEntries().map(function (entry) {
+      var activeClass = entry.symbol === activeSymbol ? ' active' : ''
+      return '<button class="tab' + activeClass + '" type="button" ' + attributeName + '="' + escapeAttr(entry.symbol) + '">' + escapeHtml(entry.symbol) + '</button>'
+    }).join('')
+  }
+
+  function renderConnect() {
+    var ports = state.stats.config.ports || []
+    $('portsRows').innerHTML = ports.length ? ports.map(function (port) {
+      return '<tr>' +
+        '<td class="mono">' + escapeHtml(configuredPoolHost) + '</td>' +
+        '<td>' + escapeHtml(port.port) + '</td>' +
+        '<td>' + escapeHtml(formatNumber(port.difficulty)) + '</td>' +
+        '<td>' + escapeHtml(port.desc || '-') + '</td>' +
+      '</tr>'
+    }).join('') : emptyRow(4)
+
+    var firstPort = ports[0] && ports[0].port ? ports[0].port : 3333
+    var child = coinEntries().filter(function (entry) { return entry.data.role === 'child' })[0]
+    var childPass = child ? '<WRKZ_ADDRESS>' : 'x'
+    $('commandList').innerHTML =
+      '<section class="command-card">' +
+        '<h3>XMRig CPU</h3>' +
+        '<code>xmrig -o ' + escapeHtml(configuredPoolHost) + ':' + escapeHtml(firstPort) + ' -u &lt;DEGO_ADDRESS&gt; -p ' + escapeHtml(childPass) + ' -a cryptonight-upx/2 --donate-level 0</code>' +
+      '</section>' +
+      '<section class="command-card">' +
+        '<h3>Fixed Difficulty</h3>' +
+        '<code>xmrig -o ' + escapeHtml(configuredPoolHost) + ':' + escapeHtml(firstPort) + ' -u &lt;DEGO_ADDRESS&gt;.500000 -p ' + escapeHtml(childPass) + ' -a cryptonight-upx/2 --donate-level 0</code>' +
+      '</section>'
+  }
+
+  function renderMiner(data) {
+    if (data.error) {
+      $('minerResult').innerHTML = '<section class="panel"><p class="empty">' + escapeHtml(data.error) + '</p></section>'
+      return
+    }
+    var coins = data.coins || {}
+    $('minerResult').innerHTML = Object.keys(coins).map(function (symbol) {
+      var coin = coins[symbol]
+      var stats = coin.stats || {}
+      return '<section class="panel">' +
+        '<div class="panel-header"><h3>' + escapeHtml(symbol) + '</h3><span class="badge">' + escapeHtml(coin.role) + '</span></div>' +
+        '<div class="balance-grid">' +
+          balance('Hashrate', coin.hashrate || stats.hashrate || '0 H') +
+          balance('Hashes', formatNumber(stats.hashes)) +
+          balance('Pending', formatCoins(stats.balance, symbol)) +
+          balance('Paid', formatCoins(stats.paid, symbol)) +
+          balance('Last Share', formatDate(stats.lastShare)) +
+          balance('Min Payout', formatCoins(coin.minimumPayout, symbol)) +
+        '</div>' +
+        (coin.payoutAddress ? '<p class="mono">WRKZ payout: ' + escapeHtml(coin.payoutAddress) + '</p>' : '') +
+        '<div class="table-wrap"><table><thead><tr><th>Time</th><th>Transaction</th><th>Amount</th><th>Fee</th><th>Mixin</th><th>Payees</th></tr></thead><tbody>' +
+          (coin.payments && coin.payments.length ? paymentRows(coin.payments, symbol) : emptyRow(6)) +
+        '</tbody></table></div>' +
+      '</section>'
+    }).join('')
+  }
+
+  function balance(label, value) {
+    return '<div class="balance-item"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value) + '</strong></div>'
+  }
+
+  function renderAdminStats(data) {
+    if (!data || data.error) {
+      $('adminStats').innerHTML = '<p class="empty">' + escapeHtml(data && data.error ? data.error : 'No admin data loaded.') + '</p>'
+      return
+    }
+    $('adminStats').innerHTML =
+      adminMetric('Total Owed', formatCoins(data.totalOwed, state.stats.config.symbol)) +
+      adminMetric('Total Paid', formatCoins(data.totalPaid, state.stats.config.symbol)) +
+      adminMetric('Total Mined', formatCoins(data.totalRevenue, state.stats.config.symbol)) +
+      adminMetric('Profit', formatCoins(Number(data.totalRevenue || 0) - Number(data.totalOwed || 0) - Number(data.totalPaid || 0), state.stats.config.symbol)) +
+      adminMetric('Orphan Percent', formatPercent(Number(data.blocksOrphaned || 0) / Number(data.blocksUnlocked || 1) * 100)) +
+      adminMetric('Workers', formatNumber(data.totalWorkers))
+  }
+
+  function adminMetric(label, value) {
+    return '<div class="admin-item"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value) + '</strong></div>'
+  }
+
+  function renderHealth(data, targetId) {
+    var monitoring = data && data.monitoring ? data.monitoring : data
+    var keys = monitoring ? Object.keys(monitoring) : []
+    $(targetId).innerHTML = keys.length ? keys.map(function (key) {
+      var item = monitoring[key] || {}
+      return '<div class="health-row">' +
+        '<div><strong>' + escapeHtml(key) + '</strong><small>' + escapeHtml(item.lastResponse || '-') + '</small></div>' +
+        '<span class="badge ' + (item.lastStatus === 'ok' ? 'ok' : 'fail') + '">' + escapeHtml(item.lastStatus || 'unknown') + '</span>' +
+      '</div>'
+    }).join('') : '<p class="empty">No monitoring data available.</p>'
+  }
+
+  function emptyRow(colspan) {
+    return '<tr><td colspan="' + colspan + '" class="empty-cell">No data available.</td></tr>'
+  }
+
+  function loadStats() {
+    setStatus('warn', 'Updating')
+    return fetchJson('/stats')
+      .then(function (stats) {
+        state.stats = stats
+        state.activePaymentCoin = state.activePaymentCoin || stats.config.symbol
+        setStatus('ok', 'Live')
+        setText('lastUpdated', 'Updated ' + new Date().toLocaleTimeString())
+        render()
+      })
+      .catch(function (error) {
+        setStatus('fail', 'Offline')
+        setText('lastUpdated', error.message)
+      })
+  }
+
+  function loadPayments(symbol) {
+    fetchJson('/get_payments', { coin: symbol, time: 9999999999 })
+      .then(function (payments) {
+        if (state.activePaymentCoin !== symbol) return
+        $('paymentsRows').innerHTML = payments.length ? paymentRows(payments, symbol) : emptyRow(6)
+      })
+      .catch(function () {
+        if (state.activePaymentCoin === symbol) $('paymentsRows').innerHTML = '<tr><td colspan="6" class="empty-cell">Could not load payments.</td></tr>'
+      })
+  }
+
+  function bindEvents() {
+    window.addEventListener('hashchange', routeFromHash)
+    $('refreshButton').addEventListener('click', loadStats)
+    $('monitoringButton').addEventListener('click', function () {
+      fetchJson('/admin_monitoring').then(function (data) { renderHealth(data, 'healthList') })
+    })
+    $('minerForm').addEventListener('submit', function (event) {
+      event.preventDefault()
+      var address = $('minerAddress').value.trim()
+      if (!address) return
+      fetchJson('/stats_address', { address: address }).then(renderMiner).catch(function (error) {
+        $('minerResult').innerHTML = '<section class="panel"><p class="empty">' + escapeHtml(error.message) + '</p></section>'
+      })
+    })
+    $('adminForm').addEventListener('submit', function (event) {
+      event.preventDefault()
+      state.adminPassword = $('adminPassword').value
+      fetchJson('/admin_stats', { password: state.adminPassword }).then(renderAdminStats).catch(function (error) {
+        renderAdminStats({ error: error.message })
+      })
+      fetchJson('/admin_monitoring', { password: state.adminPassword }).then(function (data) { renderHealth(data, 'adminHealthList') }).catch(function (error) {
+        $('adminHealthList').innerHTML = '<p class="empty">' + escapeHtml(error.message) + '</p>'
+      })
+    })
+    Array.prototype.forEach.call(document.querySelectorAll('[data-route]'), function (link) {
+      link.addEventListener('click', function () {
+        state.route = link.getAttribute('data-route')
+        renderRoute()
+      })
+    })
+    $('blocksTabs').addEventListener('click', function (event) {
+      var button = event.target.closest('[data-block-coin]')
+      if (button) {
+        state.activeBlockCoin = button.getAttribute('data-block-coin')
+        setActive(button, '[data-block-coin]')
+        renderBlocks()
+      }
+    })
+    $('paymentsTabs').addEventListener('click', function (event) {
+      var button = event.target.closest('[data-payment-coin]')
+      if (button) {
+        state.activePaymentCoin = button.getAttribute('data-payment-coin')
+        setActive(button, '[data-payment-coin]')
+        renderPayments()
+      }
+    })
+  }
+
+  function setActive(activeNode, selector) {
+    Array.prototype.forEach.call(document.querySelectorAll(selector), function (node) {
+      node.classList.toggle('active', node === activeNode)
+    })
+  }
+
+  function routeFromHash() {
+    var route = (window.location.hash || '#overview').replace('#', '')
+    state.route = titles[route] ? route : 'overview'
+    renderRoute()
+  }
+
+  bindEvents()
+  routeFromHash()
+  loadStats()
+  window.setInterval(loadStats, 30000)
+})()

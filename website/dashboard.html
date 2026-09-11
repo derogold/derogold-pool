@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DeroGold Pool Dashboard</title>
+  <link rel="icon" href="logodego.ico">
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="config.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Primary">
+      <a class="brand" href="#overview" data-route="overview">
+        <img src="logodego.ico" alt="">
+        <span>
+          <strong>DeroGold</strong>
+          <small>Mining Pool</small>
+        </span>
+      </a>
+
+      <nav class="nav-list">
+        <a href="#overview" data-route="overview" class="active">Overview</a>
+        <a href="#miner" data-route="miner">Miner</a>
+        <a href="#blocks" data-route="blocks">Blocks</a>
+        <a href="#payments" data-route="payments">Payments</a>
+        <a href="#connect" data-route="connect">Connect</a>
+        <a href="#admin" data-route="admin">Admin</a>
+      </nav>
+
+      <div class="sidebar-status">
+        <span class="status-chip" id="apiStatus">Connecting</span>
+        <span id="lastUpdated">No data yet</span>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="pageTitle">Overview</h1>
+          <p id="pageSubtitle">Live pool, network, merged-mining, and payout state.</p>
+        </div>
+        <div class="topbar-actions">
+          <button type="button" class="button secondary" id="refreshButton">Refresh</button>
+        </div>
+      </header>
+
+      <section class="view active" id="view-overview" aria-labelledby="pageTitle">
+        <div class="section-header">
+          <h2>Network And Pool</h2>
+          <p>Parent and child chain state from the live pool API.</p>
+        </div>
+        <div class="coin-grid" id="coinOverview"></div>
+
+        <div class="two-column">
+          <section class="panel">
+            <div class="panel-header">
+              <h3>Recent Blocks</h3>
+              <a href="#blocks" data-route="blocks">View all</a>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Coin</th>
+                    <th>Height</th>
+                    <th>Status</th>
+                    <th>Effort</th>
+                    <th>Found</th>
+                  </tr>
+                </thead>
+                <tbody id="recentBlocksRows"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h3>Service Health</h3>
+              <button type="button" class="button text" id="monitoringButton">Check</button>
+            </div>
+            <div class="health-list" id="healthList">
+              <p class="empty">Admin monitoring is available after an operator check.</p>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-miner" aria-labelledby="pageTitle">
+        <div class="section-header">
+          <h2>Miner Lookup</h2>
+          <p>Balances, payments, payout address, and hashrate for a DEGO mining address.</p>
+        </div>
+        <form class="lookup-form" id="minerForm">
+          <label for="minerAddress">DEGO address</label>
+          <div class="input-row">
+            <input id="minerAddress" name="address" autocomplete="off" spellcheck="false">
+            <button class="button" type="submit">Lookup</button>
+          </div>
+        </form>
+        <div id="minerResult" class="miner-result"></div>
+      </section>
+
+      <section class="view" id="view-blocks" aria-labelledby="pageTitle">
+        <div class="section-header">
+          <h2>Blocks</h2>
+          <p>Confirmed, pending, orphaned, and child submitted blocks.</p>
+        </div>
+        <div class="tabs" id="blocksTabs" role="tablist" aria-label="Block tables"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Height</th>
+                <th>Status</th>
+                <th>Difficulty</th>
+                <th>Share Diff</th>
+                <th>Hash</th>
+                <th>Found</th>
+              </tr>
+            </thead>
+            <tbody id="blocksRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="view" id="view-payments" aria-labelledby="pageTitle">
+        <div class="section-header">
+          <h2>Payments</h2>
+          <p>Pool payment history by coin.</p>
+        </div>
+        <div class="tabs" id="paymentsTabs" role="tablist" aria-label="Payment tables"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Transaction</th>
+                <th>Amount</th>
+                <th>Fee</th>
+                <th>Mixin</th>
+                <th>Payees</th>
+              </tr>
+            </thead>
+            <tbody id="paymentsRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="view" id="view-connect" aria-labelledby="pageTitle">
+        <div class="section-header">
+          <h2>Connect</h2>
+          <p>Current ports and miner command templates.</p>
+        </div>
+        <div class="panel">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Host</th>
+                  <th>Port</th>
+                  <th>Starting Diff</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody id="portsRows"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="command-list" id="commandList"></div>
+      </section>
+
+      <section class="view" id="view-admin" aria-labelledby="pageTitle">
+        <div class="section-header">
+          <h2>Admin</h2>
+          <p>Operator-only pool accounting and service checks.</p>
+        </div>
+        <form class="lookup-form" id="adminForm">
+          <label for="adminPassword">Admin password</label>
+          <div class="input-row">
+            <input id="adminPassword" name="password" type="password" autocomplete="current-password">
+            <button class="button" type="submit">Load Admin Data</button>
+          </div>
+        </form>
+        <div class="two-column">
+          <section class="panel">
+            <div class="panel-header">
+              <h3>Accounting</h3>
+            </div>
+            <div class="admin-stats" id="adminStats"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-header">
+              <h3>Monitoring</h3>
+            </div>
+            <div class="health-list" id="adminHealthList"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <template id="emptyRowTemplate">
+    <tr>
+      <td colspan="6" class="empty-cell">No data available.</td>
+    </tr>
+  </template>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

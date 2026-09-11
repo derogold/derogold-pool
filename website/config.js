@@ -4,6 +4,8 @@ var api_blockexplorer = 'https://api.derogold.online/apimine'
 
 var poolHost = 'pool-cz.derogold4ever.online'
 
+var stratumHost = poolHost
+
 var email = 'support@poolhost.com'
 
 var cryptonatorWidget = ['', '{symbol}-USD', '{symbol}-EUR']
@@ -14,6 +16,17 @@ var blockchainExplorer = 'https:///{symbol}/block/{id}'
 
 var transactionExplorer = 'https:///{symbol}/transaction/{id}'
 
+var childExplorers = {
+  WRKZ: {
+    block: 'https://explorer.wrkz.work/#/block/{id}',
+    tx: 'https://explorer.wrkz.work/#/tx/{id}'
+  }
+}
+
+var childCoinUnits = {
+  WRKZ: 100
+}
+
 var themeCss = 'themes/default-theme.css'
 
 var networkStat = {
@@ -22,4 +35,3 @@ var networkStat = {
     ['democats.org', 'http://pool.democats.org:7603']
   ]
 }
-
