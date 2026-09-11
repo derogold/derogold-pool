@@ -112,14 +112,11 @@
   function formatUsd(value) {
     var number = Number(value)
     if (!isFinite(number)) return '-'
-    if (number > 0 && number < 0.01) {
-      return '$' + number.toPrecision(4)
-    }
     return number.toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: number >= 1 ? 2 : 4,
-      maximumFractionDigits: number >= 1 ? 2 : 8
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     })
   }
 
