@@ -250,6 +250,7 @@
   function formatCompactCoinAmount(value) {
     var number = Number(value)
     if (!isFinite(number)) return '1M'
+    if (number >= 1000000000 && number % 1000000000 === 0) return (number / 1000000000) + 'B'
     if (number >= 1000000 && number % 1000000 === 0) return (number / 1000000) + 'M'
     if (number >= 1000 && number % 1000 === 0) return (number / 1000) + 'K'
     return formatNumber(number)
