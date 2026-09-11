@@ -106,12 +106,65 @@
     "host": "127.0.0.1",
     "port": 8117,
     "blocks": 30,
+    "blocksWindowMinutes": 60,
     "payments": 30,
     "password": "YOUR_API_PASSWORD"
+  },
+  "market": {
+    "cexswap": {
+      "enabled": true,
+      "baseUrl": "https://cexswap.cc",
+      "symbols": ["DEGO", "WRKZ"],
+      "displayAmount": 1000000,
+      "displayAmounts": {
+        "DEGO": 1000000000,
+        "WRKZ": 1000000
+      },
+      "cacheSeconds": 300,
+      "timeoutMs": 5000
+    }
   },
   "daemon": {
     "host": "127.0.0.1",
     "port": 7979
+  },
+  "mergedMining": {
+    "enabled": false,
+    "parentGenesisHash": "7fb97df81221dd1366051b2d0bc7f49c66c22ac4431d879c895b06d66ef66f4c",
+    "childGenesisHash": "877e55b4e902b9bf4c9e0a7c16440f449339d56679c49d62261ae5c92596a6ce",
+    "child": {
+      "coin": "WrkzCoin",
+      "symbol": "WRKZ",
+      "coinDifficultyTarget": 60,
+      "unlockDepth": 40,
+      "poolFee": null,
+      "finderRewardPercent": null,
+      "poolAddress": "YOUR_WRKZ_POOL_WALLET_ADDRESS",
+      "daemon": {
+        "host": "127.0.0.1",
+        "port": 17856
+      },
+      "wallet": {
+        "host": "127.0.0.1",
+        "port": 1338,
+        "password": "YOUR_WRKZ_WALLET_API_PASSWORD",
+        "filename": "/path/to/your/wrkz.wallet",
+        "walletPassword": "YOUR_WRKZ_WALLET_FILE_PASSWORD",
+        "daemonHost": "127.0.0.1",
+        "daemonPort": 17856
+      },
+      "payments": {
+        "enabled": false,
+        "interval": 120,
+        "maxAddresses": 2,
+        "transferFee": 10000,
+        "minPayment": 10000000,
+        "minPaymentIdPayment": 10000000,
+        "maxTransactionAmount": 1000000000,
+        "denomination": 100,
+        "mixin": 1
+      }
+    }
   },
   "wallet": {
     "host": "127.0.0.1",

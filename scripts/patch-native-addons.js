@@ -96,24 +96,11 @@ rebuild('wrkzcoin-multi-hashing')
 
 // ---------------------------------------------------------------------------
 // turtlecoin-cryptonote-util
-// Fixes: C++ standard and binary_archive.h for modern Node/V8 headers.
+// The DeroGold fork contains the modern Node/V8 and merged-mining helper fixes.
+// Rebuild the source checkout after npm installs it with lifecycle scripts
+// disabled.
 // ---------------------------------------------------------------------------
 console.log('\n[turtlecoin-cryptonote-util]')
-patchFile(path.join(nm, 'turtlecoin-cryptonote-util', 'binding.gyp'), [
-  ['-std=c++0x', '-std=c++20'],
-  ['-std=c++14', '-std=c++20'],
-  ['-std=c++17', '-std=c++20']
-])
-patchFile(path.join(nm, 'turtlecoin-cryptonote-util', 'src', 'serialization', 'binary_archive.h'), [
-  ['stream_type::streampos', 'std::streampos']
-])
-patchFile(path.join(nm, 'turtlecoin-cryptonote-util', 'src', 'main.cc'), [
-  ['std::vector<crypto::hash>', 'std::vector<::crypto::hash>'],
-  ['block2.parent_block.miner_tx_branch.resize(crypto::tree_depth(block1.tx_hashes.size() + 1));', 'block2.parent_block.miner_tx_branch.resize(::crypto::tree_depth(block1.tx_hashes.size() + 1));'],
-  ['    tree_branch(transactionHashes.data(), transactionHashes.size(), block2.parent_block.miner_tx_branch.data());', '    ::crypto::tree_branch(transactionHashes.data(), transactionHashes.size(), block2.parent_block.miner_tx_branch.data());'],
-  ['    crypto::hash block_id;', '    ::crypto::hash block_id;'],
-  ['    if (!crypto::check_key(adr.m_spend_public_key) || !crypto::check_key(adr.m_view_public_key)) {', '    if (!::crypto::check_key(adr.m_spend_public_key) || !::crypto::check_key(adr.m_view_public_key)) {']
-])
 rebuild('turtlecoin-cryptonote-util')
 
 // ---------------------------------------------------------------------------

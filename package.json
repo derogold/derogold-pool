@@ -23,7 +23,7 @@
         "cryptonight-hashing": "git+https://github.com/derogold/node-cryptonight-hashing.git#31eba3dfa6ead42e1e0acf5531a2ac08fe727380",
         "dateformat": "^4.0.0",
         "redis": "^4.7.0",
-        "turtlecoin-cryptonote-util": "npm:@leocuvee/turtlecoin-cryptonote-util@0.1.0",
+        "turtlecoin-cryptonote-util": "git+https://github.com/derogold/turtlecoin-cryptonote-util.git#5919b1def03b2bf23f6546729d3632dfaf9c4aa0",
         "turtlecoin-utils": "git+https://github.com/derogold/turtlecoin-utils.git#e90c00bdcad5719473856885f389e853a09e481a",
         "wrkzcoin-multi-hashing": "npm:@leocuvee/wrkzcoin-multi-hashing@0.0.21"
     },

@@ -6,9 +6,13 @@ node_modules
 
 # Host-only configuration, wallet data, binaries, and logs.
 config.json
+backups
+backups/
 *.wallet
 wallet-api
+wrkz-wallet-api
 wallet-api.log
+wrkz-wallet-api.log
 *.log
 logs
 
