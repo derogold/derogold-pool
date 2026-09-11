@@ -426,10 +426,40 @@
     $(targetId).innerHTML = keys.length ? keys.map(function (key) {
       var item = monitoring[key] || {}
       return '<div class="health-row">' +
-        '<div><strong>' + escapeHtml(key) + '</strong><small>' + escapeHtml(item.lastResponse || '-') + '</small></div>' +
+        '<div><strong>' + escapeHtml(healthName(key)) + '</strong><small>' + escapeHtml(formatHealthMeta(item)) + '</small><small>' + escapeHtml(formatHealthResponse(item.lastResponse)) + '</small></div>' +
         '<span class="badge ' + (item.lastStatus === 'ok' ? 'ok' : 'fail') + '">' + escapeHtml(item.lastStatus || 'unknown') + '</span>' +
       '</div>'
     }).join('') : '<p class="empty">No monitoring data available.</p>'
+  }
+
+  function healthName(key) {
+    return String(key)
+      .replace('mergedMining:', '')
+      .replace(':', ' ')
+  }
+
+  function formatHealthMeta(item) {
+    var checked = item.lastCheck ? 'checked ' + formatDate(item.lastCheck) : 'not checked'
+    if (item.lastFail) checked += ' | last fail ' + formatDate(item.lastFail)
+    return checked
+  }
+
+  function formatHealthResponse(response) {
+    if (!response) return '-'
+    try {
+      var parsed = JSON.parse(response)
+      var parts = []
+      if (parsed.status) parts.push('status ' + parsed.status)
+      if (parsed.count) parts.push('height ' + formatNumber(parsed.count))
+      if (parsed.localDaemonBlockCount) parts.push('daemon ' + formatNumber(parsed.localDaemonBlockCount))
+      if (parsed.networkBlockCount) parts.push('network ' + formatNumber(parsed.networkBlockCount))
+      if (parsed.walletBlockCount) parts.push('wallet ' + formatNumber(parsed.walletBlockCount))
+      if (parsed.peerCount !== undefined) parts.push('peers ' + formatNumber(parsed.peerCount))
+      if (parsed.hashrate !== undefined) parts.push('hashrate ' + formatHashrate(parsed.hashrate))
+      return parts.length ? parts.join(' | ') : response
+    } catch (error) {
+      return response
+    }
   }
 
   function emptyRow(colspan) {
@@ -467,7 +497,12 @@
     window.addEventListener('hashchange', routeFromHash)
     $('refreshButton').addEventListener('click', loadStats)
     $('monitoringButton').addEventListener('click', function () {
-      fetchJson('/admin_monitoring').then(function (data) { renderHealth(data, 'healthList') })
+      $('healthList').innerHTML = '<p class="empty">Checking services...</p>'
+      fetchJson('/admin_monitoring')
+        .then(function (data) { renderHealth(data, 'healthList') })
+        .catch(function (error) {
+          $('healthList').innerHTML = '<p class="empty">' + escapeHtml(error.message) + '</p>'
+        })
     })
     $('minerForm').addEventListener('submit', function (event) {
       event.preventDefault()

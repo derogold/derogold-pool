@@ -551,7 +551,7 @@ input:focus {
   color: var(--muted);
   font-family: var(--mono);
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .command-card {
