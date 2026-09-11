@@ -20,8 +20,8 @@ const childTemplate = {
 
 const config = {
   enabled: true,
-  parentGenesisHash: '0000000000000000000000000000000000000000000000000000000000000000',
-  childGenesisHash: '0100000000000000000000000000000000000000000000000000000000000000',
+  parentGenesisHash: '7fb97df81221dd1366051b2d0bc7f49c66c22ac4431d879c895b06d66ef66f4c',
+  childGenesisHash: '877e55b4e902b9bf4c9e0a7c16440f449339d56679c49d62261ae5c92596a6ce',
   child: {
     poolAddress: 'WRKZ_POOL_ADDRESS',
     daemon: {
