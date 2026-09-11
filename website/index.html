@@ -1,424 +1,235 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
-
-    <title>Derogold Mining Pool</title>
-
-
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.4.0/jquery.timeago.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.min.js"></script>
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-
-    <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
-
-    <link href="//fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet" type="text/css">
-
-    <script src="config.js"></script>
-    <script src="custom.js"></script>
-
-    <style>
-        #coinName{
-            text-transform: capitalize;
-        }
-        body {
-            padding-top: 65px;
-            padding-bottom: 80px;
-            overflow-y: scroll;
-        }
-        .container{
-            font-size: 1.1em;
-        }
-        #loading{
-            font-size: 2em;
-        }
-        .stats {
-            margin-bottom: 10px;
-            margin-top: 5px;
-        }
-        .stats:last-child{
-            width: auto;
-        }
-        .stats > h3 > i{
-            font-size: 0.80em;
-            width: 21px;
-        }
-        .stats > div{
-            padding: 5px 0;
-        }
-        .stats > div > .fa {
-            width: 25px;
-        }
-        .stats > div > span:first-of-type{
-            font-weight: bold;
-        }
-        #stats_updated{
-            opacity: 0;
-            float: right;
-            margin-left: 30px;
-            color: #e8e8e8;
-            line-height: 47px;
-            font-size: 0.9em;
-        }
-
-        footer{
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background-color: #f5f5f5;
-        }
-
-        footer > div{
-            margin: 10px auto;
-            text-align: center;
-        }
-
-    </style>
-    
-    <link href="custom.css" rel="stylesheet">
-
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DeroGold Pool Dashboard</title>
+  <link rel="icon" href="logodego.ico">
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="config.js"></script>
 </head>
 <body>
-<br>
-<script>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Primary">
+      <a class="brand" href="#overview" data-route="overview">
+        <img src="logodego.ico" alt="">
+        <span>
+          <strong>DeroGold</strong>
+          <small>Mining Pool</small>
+        </span>
+      </a>
 
+      <nav class="nav-list">
+        <a href="#overview" data-route="overview" class="active">Overview</a>
+        <a href="#miner" data-route="miner">Miner</a>
+        <a href="#blocks" data-route="blocks">Blocks</a>
+        <a href="#payments" data-route="payments">Payments</a>
+        <a href="#connect" data-route="connect">Connect</a>
+        <a href="#admin" data-route="admin">Admin</a>
+      </nav>
 
-    var docCookies = {
-        getItem: function (sKey) {
-            return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
-        },
-        setItem: function (sKey, sValue, vEnd, sPath, sDomain, bSecure) {
-            if (!sKey || /^(?:expires|max\-age|path|domain|secure)$/i.test(sKey)) { return false; }
-            var sExpires = "";
-            if (vEnd) {
-                switch (vEnd.constructor) {
-                    case Number:
-                        sExpires = vEnd === Infinity ? "; expires=Fri, 31 Dec 9999 23:59:59 GMT" : "; max-age=" + vEnd;
-                        break;
-                    case String:
-                        sExpires = "; expires=" + vEnd;
-                        break;
-                    case Date:
-                        sExpires = "; expires=" + vEnd.toUTCString();
-                        break;
-                }
-            }
-            document.cookie = encodeURIComponent(sKey) + "=" + encodeURIComponent(sValue) + sExpires + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "") + (bSecure ? "; secure" : "");
-            return true;
-        },
-        removeItem: function (sKey, sPath, sDomain) {
-            if (!sKey || !this.hasItem(sKey)) { return false; }
-            document.cookie = encodeURIComponent(sKey) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT" + ( sDomain ? "; domain=" + sDomain : "") + ( sPath ? "; path=" + sPath : "");
-            return true;
-        },
-        hasItem: function (sKey) {
-            return (new RegExp("(?:^|;\\s*)" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=")).test(document.cookie);
-        }
-    };
+      <div class="sidebar-status">
+        <span class="status-chip" id="apiStatus">Connecting</span>
+        <span id="lastUpdated">No data yet</span>
+      </div>
+    </aside>
 
-    function getTransactionUrl(id) {
-        return transactionExplorer.replace('{symbol}', lastStats.config.symbol.toLowerCase()).replace('{id}', id);
-    }
-    
-    $.fn.update = function(txt){
-        var el = this[0];
-        if (el.textContent !== txt)
-            el.textContent = txt;
-        return this;
-    };
-
-    function updateTextClasses(className, text){
-        var els = document.getElementsByClassName(className);
-        for (var i = 0; i < els.length; i++){
-            var el = els[i];
-            if (el.textContent !== text)
-                el.textContent = text;
-        }
-    }
-
-    function updateText(elementId, text){
-        var el = document.getElementById(elementId);
-        if (el.textContent !== text){
-            el.textContent = text;
-        }
-        return el;
-    }
-
-    function updateTextLinkable(elementId, text){
-        var el = document.getElementById(elementId);
-        if (el.innerHTML !== text){
-            el.innerHTML = text;
-        }
-        return el;
-    }
-
-    var currentPage;
-    var lastStats;
-
-
-    function getReadableHashRateString(hashrate){
-        var i = 0;
-        var byteUnits = [' H', ' KH', ' MH', ' GH', ' TH', ' PH' ];
-        while (hashrate > 1000){
-            hashrate = hashrate / 1000;
-            i++;
-        }
-        return hashrate.toFixed(2) + byteUnits[i];
-    }
-
-    function formatBlockLink(hash){
-        return '<a href="' + getBlockchainUrl(hash) + '">' + hash + '</a>';
-    }
-
-    function getReadableCoins(coins, digits, withoutSymbol){
-        var amount = (parseInt(coins || 0) / lastStats.config.coinUnits).toFixed(digits || lastStats.config.coinUnits.toString().length - 1);
-        return amount + (withoutSymbol ? '' : (' ' + lastStats.config.symbol));
-    }
-
-    function formatDate(time){
-        if (!time) return '';
-        return new Date(parseInt(time) * 1000).toLocaleString();
-    }
-
-    function formatPaymentLink(hash){
-        return '<a href="' + getTransactionUrl(hash) + '">' + hash + '</a>';
-    }
-
-    function getPaymentRowElement(payment, jsonString){
-
-        var row = document.createElement('tr');
-        row.setAttribute('data-json', jsonString);
-        row.setAttribute('data-time', payment.time);
-        row.setAttribute('id', 'paymentRow' + payment.time);
-
-        row.innerHTML = getPaymentCells(payment);
-
-        return row;
-    }
-
-
-    function parsePayment(time, serializedPayment){
-        var parts = serializedPayment.split(':');
-        return {
-            time: parseInt(time),
-            hash: parts[0],
-            amount: parts[1],
-            fee: parts[2],
-            mixin: parts[3],
-            recipients: parts[4]
-        };
-    }
-
-    function renderPayments(paymentsResults){
-
-        var $paymentsRows = $('#payments_rows');
-
-        for (var i = 0; i < paymentsResults.length; i += 2){
-
-            var payment = parsePayment(paymentsResults[i + 1], paymentsResults[i]);
-
-            var paymentJson = JSON.stringify(payment);
-
-            var existingRow = document.getElementById('paymentRow' + payment.time);
-
-            if (existingRow && existingRow.getAttribute('data-json') !== paymentJson){
-                $(existingRow).replaceWith(getPaymentRowElement(payment, paymentJson));
-            }
-            else if (!existingRow){
-
-                var paymentElement = getPaymentRowElement(payment, paymentJson);
-
-                var inserted = false;
-                var rows = $paymentsRows.children().get();
-                for (var f = 0; f < rows.length; f++) {
-                    var pTime = parseInt(rows[f].getAttribute('data-time'));
-                    if (pTime < payment.time){
-                        inserted = true;
-                        $(rows[f]).before(paymentElement);
-                        break;
-                    }
-                }
-                if (!inserted)
-                    $paymentsRows.append(paymentElement);
-            }
-
-        }
-    }
-
-    function pulseLiveUpdate(){
-        var stats_update = document.getElementById('stats_updated');
-        stats_update.style.transition = 'opacity 100ms ease-out';
-        stats_update.style.opacity = 1;
-        setTimeout(function(){
-            stats_update.style.transition = 'opacity 7000ms linear';
-            stats_update.style.opacity = 0;
-        }, 500);
-    }
-
-    window.onhashchange = function(){
-        routePage();
-    };
-
-
-    function fetchLiveStats() {
-        $.ajax({
-            url: api + '/live_stats',
-            dataType: 'json',
-            cache: 'false'
-        }).done(function(data){
-            pulseLiveUpdate();
-            lastStats = data;
-            updateIndex();
-            currentPage.update();
-        }).always(function () {
-            fetchLiveStats();
-        });
-    }
-
-    function floatToString(float) {
-        return float.toFixed(6).replace(/[0\.]+$/, '');
-    }
-
-
-    var xhrPageLoading;
-    function routePage(loadedCallback) {
-
-        if (currentPage) currentPage.destroy();
-        $('#page').html('');
-        $('#loading').show();
-
-        if (xhrPageLoading)
-            xhrPageLoading.abort();
-
-        $('.hot_link').parent().removeClass('active');
-        var $link = $('a.hot_link[href="' + (window.location.hash || '#') + '"]');
-
-        $link.parent().addClass('active');
-        var page = $link.data('page');
-
-        xhrPageLoading = $.ajax({
-            url: 'pages/' + page,
-            cache: false,
-            success: function (data) {
-                $('#loading').hide();
-                $('#page').show().html(data);
-                currentPage.init();
-                currentPage.update();
-                if (loadedCallback) loadedCallback();
-            }
-        });
-    }
-
-    function updateIndex(){
-        updateText('coinName', lastStats.config.coin);
-        var title = $(".navbar-brand").text();
-        $("title").text(title.charAt(0).toUpperCase() + title.slice(1));
-        updateText('poolVersion', lastStats.config.version);
-    }
-
-    function getBlockchainUrl(id) {
-        return blockchainExplorer.replace('{symbol}', lastStats.config.symbol.toLowerCase()).replace('{id}', id);
-    }
-
-    $(function(){
-		$("head").append("<link rel='stylesheet' href=" + themeCss + ">");
-		
-        $.get(api + '/stats', function(data){
-            lastStats = data;
-            updateIndex();
-            routePage(fetchLiveStats);
-        });
-    });
-
-    // Blockexplorer functions
-    urlParam = function(name){
-        var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-        if (results==null){
-           return null;
-        }
-        else{
-           return results[1] || 0;
-        }
-    }
-</script>
-
-<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-	    <img src="https://pool-cz.derogold4ever.online/logodego.ico" style="width:42px;height:42px" align=left> <a class="navbar-brand active" href="https://pool-cz.derogold4ever.online/">&nbsp;<span id="coinName"></span> Mining Pool</a>
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="pageTitle">Overview</h1>
+          <p id="pageSubtitle">Live pool, network, merged-mining, and payout state.</p>
         </div>
-        <div class="collapse navbar-collapse">
-            <ul class="nav navbar-nav" data-toggle="collapse" data-target=".navbar-collapse">
-
-                <li style="display:none;" class="active"><a class="hot_link" data-page="home.html" href="#">
-                    <i class="fa fa-home"></i> Home
-                </a></li>
-
-                <li><a class="hot_link" data-page="pool_blocks.html" href="#pool_blocks">
-                    <i class="fa fa-cubes"></i> Pool Blocks
-                </a></li>
-
-                <li><a class="hot_link" data-page="payments.html" href="#payments">
-                    <i class="fa fa-paper-plane-o"></i> Payments
-                </a></li>
-
-<!-- //-->
-                <li><a class="hot_link" data-page="blockchain_blocks.html" href="#blockchain_blocks">
-                    <i class="fa fa-cubes"></i> Blockchain
-                </a></li>
-
-                <li style="display:none;"><a class="hot_link" data-page="blockchain_block.html" href="#blockchain_block">
-                </a></li>
-
-                <li style="display:none;"><a class="hot_link" data-page="blockchain_transaction.html" href="#blockchain_transaction">
-                </a></li>
-<!-- //-->
-                <li><a class="hot_link" data-page="network.html" href="#network">
-                    <i class="fa fa-chain"></i> Network
-                </a></li>
-
-                <li><a class="hot_link" data-page="worker_stats.html" href="#worker_stats">
-                    <i class="fa fa-tachometer"></i> Worker Stats
-                </a></li>
-
-		<li><a class="hot_link" data-page="getting_started.html" href="#getting_started">
-                    <i class="fa fa-rocket"></i> Getting Started
-		</a></li>
-
-
-            </ul>
-            <div id="stats_updated">Stats Updated &nbsp;<i class="fa fa-bolt"></i></div>
+        <div class="topbar-actions">
+          <button type="button" class="button secondary" id="refreshButton">Refresh</button>
         </div>
+      </header>
 
-    </div>
-</div>
+      <section class="view active" id="view-overview" aria-labelledby="pageTitle">
+        <div class="section-header">
+          <h2>Network And Pool</h2>
+          <p>Parent and child chain state from the live pool API.</p>
+        </div>
+        <section class="market-panel" id="degoMarketPanel">
+          <div>
+            <span class="eyebrow">CEXSwap Market</span>
+            <h3>Price</h3>
+          </div>
+          <div class="market-values">
+            <div class="market-value primary">
+              <span>1M DEGO</span>
+              <strong id="degoMarketPrice">-</strong>
+            </div>
+            <div class="market-value">
+              <span>1M WRKZ</span>
+              <strong id="wrkzMarketPrice">-</strong>
+            </div>
+            <div class="market-value">
+              <span>Updated</span>
+              <strong id="marketUpdated">-</strong>
+            </div>
+          </div>
+        </section>
+        <div class="coin-grid" id="coinOverview"></div>
+        <section class="trend-grid" id="poolTrendGrid" aria-label="Pool trends"></section>
 
-<div class="container">
+        <div class="two-column">
+          <section class="panel">
+            <div class="panel-header">
+              <h3>Recent Blocks</h3>
+              <a href="#blocks" data-route="blocks">View all</a>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Coin</th>
+                    <th>Height</th>
+                    <th>Status</th>
+                    <th>Effort</th>
+                    <th>Found</th>
+                  </tr>
+                </thead>
+                <tbody id="recentBlocksRows"></tbody>
+              </table>
+            </div>
+          </section>
 
-    <div id="page"></div>
+          <section class="panel">
+            <div class="panel-header">
+              <h3>Service Health</h3>
+            </div>
+            <div class="health-list" id="healthList">
+              <p class="empty">Checking public service status...</p>
+            </div>
+          </section>
+        </div>
+      </section>
 
-    <p id="loading" class="text-center"><i class="fa fa-circle-o-notch fa-spin"></i></p>
+      <section class="view" id="view-miner" aria-labelledby="pageTitle">
+        <div class="section-header">
+          <h2>Miner Lookup</h2>
+          <p>Balances, payments, payout address, and hashrate for a DEGO mining address.</p>
+        </div>
+        <form class="lookup-form" id="minerForm">
+          <label for="minerAddress">DEGO address</label>
+          <div class="input-row">
+            <input id="minerAddress" name="address" autocomplete="off" spellcheck="false">
+            <button class="button" type="submit">Lookup</button>
+          </div>
+        </form>
+        <div id="minerResult" class="miner-result"></div>
+      </section>
 
-</div>
+      <section class="view" id="view-blocks" aria-labelledby="pageTitle">
+        <div class="section-header">
+          <h2>Blocks</h2>
+          <p>Confirmed, pending, orphaned, and child submitted blocks.</p>
+        </div>
+        <div class="tabs" id="blocksTabs" role="tablist" aria-label="Block tables"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Height</th>
+                <th>Status</th>
+                <th>Difficulty</th>
+                <th>Share Diff</th>
+                <th>Effort</th>
+                <th>Hash</th>
+                <th>Found</th>
+              </tr>
+            </thead>
+            <tbody id="blocksRows"></tbody>
+          </table>
+        </div>
+      </section>
 
-<footer>
-    <div class="text-muted">
-        Powered by <a target="_blank" href="https://github.com/forknote/cryptonote-forknote-pool"><i class="fa fa-github"></i> cryptonote-forknote-pool</a>
-        <span id="poolVersion"></span>
-        open sourced under the <a href="http://www.gnu.org/licenses/gpl-2.0.html">GPL</a>
-    </div>
-</footer>
+      <section class="view" id="view-payments" aria-labelledby="pageTitle">
+        <div class="section-header">
+          <h2>Payments</h2>
+          <p>Pool payment history by coin.</p>
+        </div>
+        <div class="tabs" id="paymentsTabs" role="tablist" aria-label="Payment tables"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Transaction</th>
+                <th>Amount</th>
+                <th>Fee</th>
+                <th>Mixin</th>
+                <th>Payees</th>
+              </tr>
+            </thead>
+            <tbody id="paymentsRows"></tbody>
+          </table>
+        </div>
+      </section>
 
+      <section class="view" id="view-connect" aria-labelledby="pageTitle">
+        <div class="section-header">
+          <h2>Connect</h2>
+          <p>Mine DEGO with optional WRKZ merged-mining rewards on the same hashrate.</p>
+        </div>
+        <div class="panel">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Host</th>
+                  <th>Port</th>
+                  <th>Starting Diff</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody id="portsRows"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="command-list" id="commandList"></div>
+      </section>
 
+      <section class="view" id="view-admin" aria-labelledby="pageTitle">
+        <div class="section-header">
+          <h2>Admin</h2>
+          <p>Operator-only pool accounting and service checks.</p>
+        </div>
+        <form class="lookup-form" id="adminForm">
+          <label for="adminPassword">Admin password</label>
+          <div class="input-row">
+            <input id="adminPassword" name="password" type="password" autocomplete="current-password" autocapitalize="off" spellcheck="false">
+            <button class="button" type="submit">Load Admin Data</button>
+          </div>
+        </form>
+        <div class="two-column">
+          <section class="panel">
+            <div class="panel-header">
+              <h3>Accounting</h3>
+            </div>
+            <div class="admin-accounting" id="adminStats"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-header">
+              <h3>Monitoring</h3>
+            </div>
+            <div class="health-list" id="adminHealthList">
+              <p class="empty">Enter the pool API password to load service checks.</p>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <template id="emptyRowTemplate">
+    <tr>
+      <td colspan="6" class="empty-cell">No data available.</td>
+    </tr>
+  </template>
+
+  <script src="config.local.js"></script>
+  <script src="dashboard.js?v=20260911-remember-inputs"></script>
 </body>
 </html>

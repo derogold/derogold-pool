@@ -1,8 +1,8 @@
-var api = 'https://pool-cz.derogold4ever.online/api1/'
+var api = 'https://api.derogold.online/apimine'
 
 var api_blockexplorer = 'https://api.derogold.online/apimine'
 
-var poolHost = 'pool-cz.derogold4ever.online'
+var poolHost = 'pool.derogold.online'
 
 var stratumHost = poolHost
 
@@ -12,9 +12,9 @@ var cryptonatorWidget = ['', '{symbol}-USD', '{symbol}-EUR']
 
 var easyminerDownload = 'https://github.com/uPlexa/xmrig-upx/releases/tag/v0.2.0'
 
-var blockchainExplorer = 'https:///{symbol}/block/{id}'
+var blockchainExplorer = 'https://explorer.derogold.online/block/{id}'
 
-var transactionExplorer = 'https:///{symbol}/transaction/{id}'
+var transactionExplorer = 'https://explorer.derogold.online/tx/{id}'
 
 var childExplorers = {
   WRKZ: {
