@@ -223,6 +223,84 @@
 
     renderRecentBlocks()
     renderMarket()
+    renderPoolTrends()
+  }
+
+  function renderPoolTrends() {
+    var charts = state.stats.charts || {}
+    var trends = [
+      { key: 'difficulty', title: 'Difficulty', value: state.stats.network && state.stats.network.difficulty, formatter: formatNumber },
+      { key: 'hashrate', title: 'Pool Hashrate', value: state.stats.pool && state.stats.pool.hashrate, formatter: formatHashrate },
+      { key: 'workers', title: 'Miners', value: state.stats.pool && state.stats.pool.miners, formatter: formatNumber }
+    ]
+
+    $('poolTrendGrid').innerHTML = trends.map(function (trend) {
+      var points = chartPoints(charts[trend.key])
+      return '<section class="trend-card">' +
+        '<div class="trend-header">' +
+          '<div><h3>' + escapeHtml(trend.title) + '</h3><span>' + escapeHtml(chartPeriodLabel(points)) + '</span></div>' +
+          '<strong>' + escapeHtml(trend.formatter(trend.value)) + '</strong>' +
+        '</div>' +
+        (points.length > 1
+          ? '<canvas class="trend-chart" data-chart-key="' + escapeAttr(trend.key) + '" width="320" height="92"></canvas>'
+          : '<div class="trend-empty">Collecting history</div>') +
+      '</section>'
+    }).join('')
+
+    trends.forEach(function (trend) {
+      drawTrendChart(document.querySelector('[data-chart-key="' + trend.key + '"]'), chartPoints(charts[trend.key]))
+    })
+  }
+
+  function chartPoints(raw) {
+    if (!Array.isArray(raw)) return []
+    return raw.map(function (point) {
+      return {
+        time: Number(point && point[0]),
+        value: Number(point && point[1])
+      }
+    }).filter(function (point) {
+      return isFinite(point.time) && isFinite(point.value)
+    })
+  }
+
+  function chartPeriodLabel(points) {
+    if (!points.length) return 'waiting for data'
+    var first = points[0].time
+    var last = points[points.length - 1].time
+    var hours = Math.max(0, (last - first) / 3600)
+    if (hours >= 24) return Math.round(hours / 24) + 'd snapshot'
+    if (hours >= 1) return Math.round(hours) + 'h snapshot'
+    return 'recent snapshot'
+  }
+
+  function drawTrendChart(canvas, points) {
+    if (!canvas || points.length < 2) return
+    var context = canvas.getContext('2d')
+    var width = canvas.width
+    var height = canvas.height
+    var padding = 8
+    var values = points.map(function (point) { return point.value })
+    var min = Math.min.apply(Math, values)
+    var max = Math.max.apply(Math, values)
+    var range = max - min || 1
+
+    context.clearRect(0, 0, width, height)
+    context.lineWidth = 2
+    context.strokeStyle = '#0f766e'
+    context.fillStyle = 'rgba(15, 118, 110, 0.12)'
+    context.beginPath()
+    points.forEach(function (point, index) {
+      var x = padding + (index / (points.length - 1)) * (width - padding * 2)
+      var y = height - padding - ((point.value - min) / range) * (height - padding * 2)
+      if (index === 0) context.moveTo(x, y)
+      else context.lineTo(x, y)
+    })
+    context.stroke()
+    context.lineTo(width - padding, height - padding)
+    context.lineTo(padding, height - padding)
+    context.closePath()
+    context.fill()
   }
 
   function renderMarket() {
