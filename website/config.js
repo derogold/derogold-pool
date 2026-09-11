@@ -4,7 +4,7 @@ var api_blockexplorer = 'https://your-pool-api.example.com/apimine'
 
 var poolHost = 'your-pool.example.com'
 
-var stratumHost = poolHost
+var stratumHost = 'mining.your-pool.example.com'
 
 var email = 'support@poolhost.com'
 

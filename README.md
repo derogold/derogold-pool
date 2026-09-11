@@ -246,7 +246,7 @@ Set at least:
 var api = 'https://your-pool-api.example.com/apimine'
 var api_blockexplorer = api
 var poolHost = 'your-pool.example.com'
-var stratumHost = poolHost
+var stratumHost = 'mining.your-pool.example.com'
 ```
 
 The dashboard uses:
@@ -282,7 +282,7 @@ CPU XMRig-UPX style:
 
 ```bash
 ./xmrig \
-  -o your-pool.example.com:3333 \
+  -o mining.your-pool.example.com:3333 \
   -a cn/upx2 \
   -u YOUR_DEGO_ADDRESS \
   -p YOUR_WRKZ_ADDRESS
@@ -292,7 +292,7 @@ DEGO-only compatibility:
 
 ```bash
 ./xmrig \
-  -o your-pool.example.com:3333 \
+  -o mining.your-pool.example.com:3333 \
   -a cn/upx2 \
   -u YOUR_DEGO_ADDRESS \
   -p x
@@ -302,7 +302,7 @@ A fixed difficulty can be requested by suffixing the DEGO login if `poolServer.f
 
 ```bash
 ./xmrig \
-  -o your-pool.example.com:3333 \
+  -o mining.your-pool.example.com:3333 \
   -a cn/upx2 \
   -u YOUR_DEGO_ADDRESS.300000 \
   -p YOUR_WRKZ_ADDRESS
