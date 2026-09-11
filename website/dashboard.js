@@ -122,12 +122,13 @@
   }
 
   function coinUnits(symbol) {
-    if (symbol === state.stats.config.symbol) return Number(state.stats.config.coinUnits || 1)
+    var config = state.stats && state.stats.config ? state.stats.config : {}
+    if (symbol === config.symbol) return Number(config.coinUnits || 1)
     if (configuredChildCoinUnits[symbol]) return Number(configuredChildCoinUnits[symbol])
-    var coin = state.stats.coins && state.stats.coins[symbol]
+    var coin = state.stats && state.stats.coins && state.stats.coins[symbol]
     var coinUnits = coin && coin.pool && coin.pool.coinUnits
     if (coinUnits) return Number(coinUnits)
-    return Number(state.stats.config.coinUnits || 1)
+    return Number(config.coinUnits || 1)
   }
 
   function formatCoins(value, symbol) {
@@ -604,8 +605,9 @@
     var coins = data.coins || {}
     var symbols = Object.keys(coins)
     if (!symbols.length) {
-      symbols = [state.stats.config.symbol]
-      coins[state.stats.config.symbol] = data
+      var fallbackSymbol = getParentSymbol()
+      symbols = [fallbackSymbol]
+      coins[fallbackSymbol] = data
     }
     $('adminStats').innerHTML = symbols.map(function (symbol) {
       return '<section class="admin-coin">' +
@@ -630,7 +632,13 @@
   }
 
   function adminCoinRole(symbol) {
-    return symbol === state.stats.config.symbol ? 'parent' : 'child'
+    return symbol === getParentSymbol() ? 'parent' : 'child'
+  }
+
+  function getParentSymbol() {
+    return state.stats && state.stats.config && state.stats.config.symbol
+      ? state.stats.config.symbol
+      : 'DEGO'
   }
 
   function adminOrphanPercent(data) {
