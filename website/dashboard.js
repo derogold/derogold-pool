@@ -475,6 +475,7 @@
         setStatus('ok', 'Live')
         setText('lastUpdated', 'Updated ' + new Date().toLocaleTimeString())
         render()
+        loadHealth()
       })
       .catch(function (error) {
         setStatus('fail', 'Offline')
@@ -493,9 +494,38 @@
       })
   }
 
+  function loadHealth() {
+    return fetchJson('/health')
+      .then(renderPublicHealth)
+      .catch(function (error) {
+        $('healthList').innerHTML = '<p class="empty">' + escapeHtml(error.message) + '</p>'
+      })
+  }
+
+  function renderPublicHealth(data) {
+    var services = data && data.services ? data.services : {}
+    var keys = Object.keys(services)
+    $('healthList').innerHTML = keys.length ? keys.map(function (key) {
+      var service = services[key] || {}
+      return '<div class="health-row">' +
+        '<div><strong>' + escapeHtml(service.label || key) + '</strong><small>' + escapeHtml(service.lastCheck ? 'checked ' + formatDate(service.lastCheck) : 'not checked') + '</small></div>' +
+        serviceStatusBadge(service.status) +
+      '</div>'
+    }).join('') : '<p class="empty">No public service status available.</p>'
+  }
+
+  function serviceStatusBadge(status) {
+    var type = status === 'ok' ? 'ok' : status === 'fail' ? 'fail' : status === 'disabled' ? 'disabled' : 'warn'
+    return '<span class="badge ' + type + '">' + escapeHtml(status || 'unknown') + '</span>'
+  }
+
   function bindEvents() {
     window.addEventListener('hashchange', routeFromHash)
     $('refreshButton').addEventListener('click', loadStats)
+    $('healthButton').addEventListener('click', function () {
+      $('healthList').innerHTML = '<p class="empty">Checking public service status...</p>'
+      loadHealth()
+    })
     $('minerForm').addEventListener('submit', function (event) {
       event.preventDefault()
       var address = $('minerAddress').value.trim()

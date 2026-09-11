@@ -180,6 +180,12 @@ input {
   color: var(--danger);
 }
 
+.badge.disabled {
+  border-color: var(--border);
+  background: var(--surface-muted);
+  color: var(--muted-strong);
+}
+
 .main {
   min-width: 0;
   padding: 24px 32px 40px;
