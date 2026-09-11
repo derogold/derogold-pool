@@ -223,7 +223,7 @@
     var rows = []
     coinEntries().forEach(function (entry) {
       var blocks = entry.data.blocks || {}
-      ;(blocks.latest || []).slice(0, 5).forEach(function (block) {
+      mergedBlockRows(blocks).slice(0, 5).forEach(function (block) {
         rows.push({
           symbol: entry.symbol,
           height: block.height,
@@ -238,14 +238,38 @@
     }).join('') : emptyRow(5)
   }
 
+  function mergedBlockRows(blocks) {
+    var latest = (blocks && blocks.latest) || []
+    var matured = (blocks && blocks.maturedLatest) || []
+    var maturedByKey = {}
+
+    matured.forEach(function (block) {
+      maturedByKey[blockKey(block)] = block
+    })
+
+    return latest.map(function (block) {
+      var maturedBlock = maturedByKey[blockKey(block)]
+      if (!maturedBlock) return block
+      var merged = {}
+      Object.keys(block).forEach(function (key) { merged[key] = block[key] })
+      Object.keys(maturedBlock).forEach(function (key) { merged[key] = maturedBlock[key] })
+      return merged
+    })
+  }
+
+  function blockKey(block) {
+    return String(block.hash || '') + ':' + String(block.height || '')
+  }
+
   function blockStatus(block) {
     if (block.orphaned === true) return 'orphaned'
-    if (block.orphaned === false) return 'accepted'
+    if (block.orphaned === false) return 'confirmed'
+    if (block.status === 'OK') return 'submitted'
     return block.status || 'pending'
   }
 
   function statusBadge(status) {
-    var type = status === 'accepted' || status === 'OK' ? 'ok' : status === 'orphaned' ? 'fail' : 'warn'
+    var type = status === 'confirmed' ? 'ok' : status === 'orphaned' ? 'fail' : 'warn'
     return '<span class="badge ' + type + '">' + escapeHtml(status) + '</span>'
   }
 
@@ -262,7 +286,7 @@
   function renderBlocks() {
     renderCoinTabs('blocksTabs', 'data-block-coin', state.activeBlockCoin)
     var entry = coinEntries().filter(function (item) { return item.symbol === state.activeBlockCoin })[0] || coinEntries()[0]
-    var blocks = entry && entry.data.blocks ? entry.data.blocks.latest || [] : []
+    var blocks = entry && entry.data.blocks ? mergedBlockRows(entry.data.blocks) : []
     $('blocksRows').innerHTML = blocks.length ? blocks.map(function (block) {
       var status = blockStatus(block)
       return '<tr class="' + blockRowClass(status) + '">' +
