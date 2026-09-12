@@ -100,6 +100,7 @@ WRKZ merged mining is disabled in `config.json.example`. To enable it, set the c
     "child": {
       "coin": "WrkzCoin",
       "symbol": "WRKZ",
+      "apiSlug": "wrkz",
       "coinDifficultyTarget": 60,
       "unlockDepth": 40,
       "poolFee": 1,
@@ -265,11 +266,12 @@ Common public endpoints:
 GET /stats
 GET /stats_address?address=YOUR_DEGO_ADDRESS
 GET /get_apis
+GET /wrkz/stats
 GET /health
 GET /market_prices
 ```
 
-`/get_apis` is a dvandal-compatible merged-mining discovery endpoint. When merged mining is enabled, it returns enabled child coins and the API URL crawlers should use. Set `api.publicUrl` to the externally reachable API base, for example `https://your-pool-api.example.com/apimine`.
+`/get_apis` is a dvandal-compatible merged-mining discovery endpoint. When merged mining is enabled, it returns enabled child coins and the API URL crawlers should use. Set `api.publicUrl` to the externally reachable API base, for example `https://your-pool-api.example.com/apimine`; the WRKZ child facade is then exposed as `https://your-pool-api.example.com/apimine/wrkz/stats`.
 
 Admin accounting:
 

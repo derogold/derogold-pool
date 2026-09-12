@@ -136,6 +136,7 @@
     "child": {
       "coin": "WrkzCoin",
       "symbol": "WRKZ",
+      "apiSlug": "wrkz",
       "coinDifficultyTarget": 60,
       "unlockDepth": 40,
       "poolFee": null,
