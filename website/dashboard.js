@@ -135,7 +135,7 @@
     var number = Number(value)
     var units = coinUnits(symbol)
     if (!isFinite(number) || !units) return '-'
-    var decimals = 2
+    var decimals = units === 100 ? 2 : Math.min(String(units).length - 1, 8)
     return (number / units).toLocaleString('en-US', {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals
@@ -583,7 +583,7 @@
           balance('Paid', formatCoins(stats.paid, symbol)) +
           balance('Last Share', formatDate(stats.lastShare)) +
           balance('Pool Fee', formatPercent(coin.poolFee)) +
-          balance('Min Payout', formatCoins(coin.effectiveMinimumPayout || coin.minimumPayout, symbol)) +
+          balance('Min Payout', formatCoins(coin.minimumPayout, symbol)) +
         '</div>' +
         (coin.payoutAddress ? '<p class="mono">WRKZ payout: ' + escapeHtml(coin.payoutAddress) + '</p>' : '') +
         '<div class="table-wrap"><table><thead><tr><th>Time</th><th>Transaction</th><th>Amount</th><th>Fee</th><th>Mixin</th><th>Payees</th></tr></thead><tbody>' +
