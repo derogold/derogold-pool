@@ -83,7 +83,7 @@ Important sections:
 - `daemon`: DEGO daemon RPC connection.
 - `wallet`: DEGO wallet-api connection and wallet file details.
 - `redis`: Redis connection.
-- `api`: API bind host/port, public list limits, chart window, and admin password.
+- `api`: API bind host/port, optional public URL, public list limits, chart window, and admin password.
 - `market.cexswap`: optional CEXSwap market-price settings.
 - `mergedMining`: optional child-chain settings.
 
@@ -263,10 +263,13 @@ Common public endpoints:
 
 ```text
 GET /stats
-GET /miner_stats?address=YOUR_DEGO_ADDRESS
+GET /stats_address?address=YOUR_DEGO_ADDRESS
+GET /get_apis
 GET /health
 GET /market_prices
 ```
+
+`/get_apis` is a dvandal-compatible merged-mining discovery endpoint. When merged mining is enabled, it returns enabled child coins and the API URL crawlers should use. Set `api.publicUrl` to the externally reachable API base, for example `https://your-pool-api.example.com/apimine`.
 
 Admin accounting:
 

@@ -105,6 +105,7 @@
     "updateInterval": 5,
     "host": "127.0.0.1",
     "port": 8117,
+    "publicUrl": "https://your-pool-api.example.com/apimine",
     "blocks": 30,
     "blocksWindowMinutes": 60,
     "payments": 30,
