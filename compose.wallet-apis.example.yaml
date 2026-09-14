@@ -1,0 +1,51 @@
+# Optional wallet-api services for deployments that prefer Docker over tmux/systemd.
+#
+# The pool opens wallets through wallet-api, so the pool config must use paths
+# that exist inside these containers when it calls /wallet/open, for example:
+#   wallet.filename: /wallets/dego/dego-pool.wallet
+#   mergedMining.child.wallet.filename: /wallets/wrkz/wrkz-payment.wallet
+#
+# Copy this file to a local deployment compose file and replace all paths/secrets.
+services:
+  dego-wallet-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.wallet-api
+    init: true
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      WALLET_API_BINARY: /usr/local/bin/wallet-api
+      WALLET_API_PORT: "1337"
+      WALLET_API_BIND_IP: 127.0.0.1
+      WALLET_API_RPC_PASSWORD: "REPLACE_WITH_DEGO_WALLET_API_PASSWORD"
+      WALLET_API_LOG_FILE: /logs/dego-wallet-api.log
+      WALLET_API_LOG_LEVEL: "2"
+      WALLET_API_SCAN_COINBASE: "true"
+    volumes:
+      - /path/to/dego/wallet-api:/usr/local/bin/wallet-api:ro
+      - /path/to/dego/wallet-directory:/wallets/dego
+      - wallet-api-logs:/logs
+
+  wrkz-wallet-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.wallet-api
+    init: true
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      WALLET_API_BINARY: /usr/local/bin/wrkz-wallet-api
+      WALLET_API_PORT: "1338"
+      WALLET_API_BIND_IP: 127.0.0.1
+      WALLET_API_RPC_PASSWORD: "REPLACE_WITH_WRKZ_WALLET_API_PASSWORD"
+      WALLET_API_LOG_FILE: /logs/wrkz-wallet-api.log
+      WALLET_API_LOG_LEVEL: "2"
+      WALLET_API_SCAN_COINBASE: "true"
+    volumes:
+      - /path/to/wrkz/wrkz-wallet-api:/usr/local/bin/wrkz-wallet-api:ro
+      - /path/to/wrkz/wallet-directory:/wallets/wrkz
+      - wallet-api-logs:/logs
+
+volumes:
+  wallet-api-logs:

@@ -3,4 +3,5 @@ node_modules/
 logs/
 npm-debug.log
 config.json
+compose.wallet-apis.local.yaml
 website/config.local.js

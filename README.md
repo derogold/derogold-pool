@@ -200,6 +200,33 @@ docker compose up -d --force-recreate
 
 Run one wallet-api instance per coin. The pool opens the configured wallet file through the wallet-api using the values from `wallet` and `mergedMining.child.wallet`.
 
+### Docker wallet-api
+
+`compose.wallet-apis.example.yaml` provides optional container wrappers for DEGO and WRKZ wallet-api binaries. Copy it into your deployment area, replace the binary, wallet-directory, and password placeholders, then include it with Compose:
+
+```bash
+docker compose -f compose.yaml -f compose.wallet-apis.local.yaml up -d --build
+```
+
+The wallet-api binaries do not have a native config-file option. The container preserves the existing command-line model: it starts wallet-api with port, RPC password, log, bind IP, and coinbase-scan flags. The pool still opens the configured wallet file through `/wallet/open`.
+
+When wallet-api runs in Docker, set `wallet.filename` and `mergedMining.child.wallet.filename` in the pool config to paths visible inside the wallet-api containers, not host-only paths. For example:
+
+```json
+{
+  "wallet": {
+    "filename": "/wallets/dego/dego-pool.wallet"
+  },
+  "mergedMining": {
+    "child": {
+      "wallet": {
+        "filename": "/wallets/wrkz/wrkz-payment.wallet"
+      }
+    }
+  }
+}
+```
+
 Example DEGO wallet-api command:
 
 ```bash
