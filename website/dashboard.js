@@ -751,8 +751,11 @@
     var keys = Object.keys(services)
     $('healthList').innerHTML = keys.length ? keys.map(function (key) {
       var service = services[key] || {}
+      var details = service.lastCheck ? 'checked ' + formatDate(service.lastCheck) : 'not checked'
+      if (service.lastPayment) details += ' | last payment ' + formatDate(service.lastPayment)
+      else if (/payments$/.test(key)) details += ' | no successful payment recorded'
       return '<div class="health-row">' +
-        '<div><strong>' + escapeHtml(service.label || key) + '</strong><small>' + escapeHtml(service.lastCheck ? 'checked ' + formatDate(service.lastCheck) : 'not checked') + '</small></div>' +
+        '<div><strong>' + escapeHtml(service.label || key) + '</strong><small>' + escapeHtml(details) + '</small></div>' +
         serviceStatusBadge(service.status) +
       '</div>'
     }).join('') : '<p class="empty">No public service status available.</p>'

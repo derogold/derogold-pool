@@ -13,9 +13,10 @@
     },
     "scripts": {
         "patch-addons": "node scripts/patch-native-addons.js",
-        "test": "npm install --ignore-scripts && node scripts/patch-native-addons.js && node tests/dependencyTests.js && node tests/shareReplayTests.js",
+        "test": "npm install --ignore-scripts && node scripts/patch-native-addons.js && node tests/dependencyTests.js && node tests/shareReplayTests.js && node tests/paymentHealthTests.js",
         "test:dependency": "node tests/dependencyTests.js",
-        "test:share-replay": "node tests/shareReplayTests.js"
+        "test:share-replay": "node tests/shareReplayTests.js",
+        "test:payment-health": "node tests/paymentHealthTests.js"
     },
     "dependencies": {
         "async": "^3.2.6",

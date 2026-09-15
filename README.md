@@ -416,7 +416,12 @@ Before production start:
 - `npm ci --ignore-scripts` and `node scripts/patch-native-addons.js` completed.
 - Regression tests pass.
 - Pool logs show accepted shares and no unexpected `Bad hash` pattern.
-- `/health` reports API, pool, daemon, and payment services as `ok`.
+- `/health` reports API, pool, daemon, and payment service health. Payment
+  health combines wallet RPC status with the timestamp of the latest successful
+  Redis payment record for each coin: up to 24 hours is `ok`, 24–48 hours is
+  `warn`, and over 48 hours (or no recorded successful payment) is `fail`.
+  This catches a wallet that is reachable and synchronized but cannot actually
+  submit transactions.
 
 Useful checks:
 
