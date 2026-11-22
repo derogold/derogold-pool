@@ -27,6 +27,7 @@ import "../styles/global.css";
 
       <nav class="nav-list">
         <a href="#overview" data-route="overview" class="active">Overview</a>
+        <a href="#pools" data-route="pools">Pools</a>
         <a href="#miner" data-route="miner">Miner</a>
         <a href="#blocks" data-route="blocks">Blocks</a>
         <a href="#payments" data-route="payments">Payments</a>
@@ -111,6 +112,52 @@ import "../styles/global.css";
             </div>
           </section>
         </div>
+      </section>
+
+      <section class="view" id="view-pools" aria-labelledby="pageTitle">
+        <div class="section-header">
+          <h2>DeroGold network distribution</h2>
+          <p>Public pool hashrate compared with the network total. Unknown includes solo, private, and pools without a public API.</p>
+        </div>
+        <div class="pool-summary-grid">
+          <div class="pool-summary"><span>Network</span><strong id="publicNetworkHashrate">-</strong></div>
+          <div class="pool-summary"><span>Public pools</span><strong id="publicKnownHashrate">-</strong></div>
+          <div class="pool-summary"><span>Unknown</span><strong id="publicUnknownHashrate">-</strong></div>
+          <div class="pool-summary"><span>Visible pools</span><strong id="publicPoolCount">-</strong></div>
+        </div>
+        <section class="panel pool-distribution-panel">
+          <div class="panel-header">
+            <h3>Hashrate distribution</h3>
+            <span>Derived from current network difficulty</span>
+          </div>
+          <div class="pool-distribution" id="poolDistribution" aria-label="Pool hashrate distribution"></div>
+          <div class="pool-legend">
+            <span><i class="pool-segment-0"></i>DoubleMint</span>
+            <span><i class="pool-segment-1"></i>SuperBlockchain</span>
+            <span><i class="pool-segment-2"></i>Unknown / private</span>
+          </div>
+        </section>
+        <section class="panel pool-table-panel">
+          <div class="panel-header">
+            <h3>Public pool stats</h3>
+            <span>External pools may report stale data</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pool</th>
+                  <th>Hashrate</th>
+                  <th>Network share</th>
+                  <th>Miners</th>
+                  <th>Height</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="publicPoolRows"></tbody>
+            </table>
+          </div>
+        </section>
       </section>
 
       <section class="view" id="view-miner" aria-labelledby="pageTitle">

@@ -4,6 +4,7 @@
   var state = {
     stats: null,
     market: null,
+    publicPools: [],
     route: 'overview',
     activeBlockCoin: '',
     activePaymentCoin: '',
@@ -31,9 +32,15 @@
   var parentTransactionExplorer = dashboardConfig.transactionExplorer || window.transactionExplorer || ''
   var childExplorers = dashboardConfig.childExplorers || window.childExplorers || {}
   var configuredChildCoinUnits = dashboardConfig.childCoinUnits || window.childCoinUnits || {}
+  var publicPoolSources = dashboardConfig.publicPools || [{
+    name: 'SuperBlockchain',
+    url: 'https://superblockchain.zapto.org/api/dego/stats',
+    homepage: 'https://superblockchain.zapto.org/'
+  }]
 
   var titles = {
     overview: ['Overview', 'Live pool, network, merged-mining, and payout state.'],
+    pools: ['Pools', 'Where the public DeroGold network hashrate is mining.'],
     miner: ['Miner', 'Balances, payments, payout address, and hashrate for a DEGO mining address.'],
     blocks: ['Blocks', 'Confirmed, pending, orphaned, and child submitted blocks.'],
     payments: ['Payments', 'Pool payment history by coin.'],
@@ -217,6 +224,7 @@
     if (!state.activePaymentCoin) state.activePaymentCoin = state.stats.config.symbol
     renderRoute()
     renderOverview()
+    renderPools()
     renderBlocks()
     renderPayments()
     renderConnect()
@@ -290,6 +298,63 @@
     trends.forEach(function (trend) {
       drawTrendChart(document.querySelector('[data-chart-key="' + trend.key + '"]'), trend.points)
     })
+  }
+
+  function renderPools() {
+    var root = $('publicPoolRows')
+    if (!root || !state.stats) return
+
+    var parentSymbol = state.stats.config.symbol
+    var parent = state.stats.coins && state.stats.coins[parentSymbol]
+    var networkHashrate = Number(parent && parent.network && parent.network.hashrate) || 0
+    var ownHashrate = Number(parent && parent.pool && parent.pool.hashrate) || 0
+    var knownPools = [{
+      name: 'DoubleMint',
+      hashrate: ownHashrate,
+      miners: parent && parent.pool && parent.pool.miners,
+      height: parent && parent.network && parent.network.height,
+      updated: parent && parent.network && parent.network.timestamp,
+      homepage: window.location.origin,
+      status: 'live'
+    }].concat(state.publicPools)
+
+    var knownHashrate = knownPools.reduce(function (sum, pool) {
+      return sum + (Number(pool.hashrate) || 0)
+    }, 0)
+    var unknownHashrate = Math.max(0, networkHashrate - knownHashrate)
+    var rows = knownPools.concat([{
+      name: 'Unknown / private',
+      hashrate: unknownHashrate,
+      miners: null,
+      height: null,
+      updated: null,
+      status: 'derived'
+    }])
+
+    setText('publicNetworkHashrate', formatHashrate(networkHashrate))
+    setText('publicKnownHashrate', formatHashrate(Math.min(knownHashrate, networkHashrate)))
+    setText('publicUnknownHashrate', formatHashrate(unknownHashrate))
+    setText('publicPoolCount', String(knownPools.length))
+
+    $('poolDistribution').innerHTML = rows.map(function (pool, index) {
+      var share = networkHashrate > 0 ? Math.max(0, (Number(pool.hashrate) || 0) / networkHashrate * 100) : 0
+      return '<span class="pool-segment pool-segment-' + index + '" style="width:' + Math.min(100, share).toFixed(2) + '%" title="' +
+        escapeAttr(pool.name + ': ' + formatPercent(share)) + '"></span>'
+    }).join('')
+
+    root.innerHTML = rows.map(function (pool) {
+      var share = networkHashrate > 0 ? (Number(pool.hashrate) || 0) / networkHashrate * 100 : 0
+      var stale = pool.updated && (Date.now() / 1000 - Number(pool.updated) > 900)
+      var label = stale ? 'stale' : pool.status
+      return '<tr>' +
+        '<td>' + (pool.homepage ? '<a target="_blank" rel="noopener" href="' + escapeAttr(pool.homepage) + '">' + escapeHtml(pool.name) + '</a>' : escapeHtml(pool.name)) + '</td>' +
+        '<td>' + escapeHtml(formatHashrate(pool.hashrate)) + '</td>' +
+        '<td>' + escapeHtml(formatPercent(share)) + '</td>' +
+        '<td>' + escapeHtml(pool.miners === null || pool.miners === undefined ? '-' : formatNumber(pool.miners)) + '</td>' +
+        '<td>' + escapeHtml(pool.height ? formatNumber(pool.height) : '-') + '</td>' +
+        '<td><span class="badge ' + (label === 'live' ? 'ok' : label === 'stale' ? 'warn' : '') + '">' + escapeHtml(label || 'unknown') + '</span></td>' +
+      '</tr>'
+    }).join('')
   }
 
   function networkSharePoints(charts) {
@@ -730,11 +795,47 @@
         setStatus('ok', 'Live')
         setText('lastUpdated', 'Updated ' + new Date().toLocaleTimeString())
         render()
+        loadPublicPools()
       })
       .catch(function (error) {
         setStatus('fail', 'Offline')
         setText('lastUpdated', error.message)
       })
+  }
+
+  function loadPublicPools() {
+    return Promise.all(publicPoolSources.map(function (source) {
+      return window.fetch(source.url, { cache: 'no-store' })
+        .then(function (response) {
+          if (!response.ok) throw new Error('HTTP ' + response.status)
+          return response.json()
+        })
+        .then(function (data) {
+          return {
+            name: source.name,
+            homepage: source.homepage,
+            hashrate: data.pool && data.pool.hashrate,
+            miners: data.pool && data.pool.miners,
+            height: data.network && data.network.height,
+            updated: data.network && data.network.timestamp,
+            status: 'live'
+          }
+        })
+        .catch(function () {
+          return {
+            name: source.name,
+            homepage: source.homepage,
+            hashrate: 0,
+            miners: null,
+            height: null,
+            updated: null,
+            status: 'unavailable'
+          }
+        })
+    })).then(function (pools) {
+      state.publicPools = pools
+      renderPools()
+    })
   }
 
   function loadMarketPrices() {
@@ -869,5 +970,6 @@
   loadMarketPrices()
   window.setInterval(loadStats, 30000)
   window.setInterval(loadHealth, 60000)
+  window.setInterval(loadPublicPools, 60000)
   window.setInterval(loadMarketPrices, 300000)
 })()
