@@ -112,6 +112,10 @@ button { cursor: pointer; }
 .pool-legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 0 18px; color: var(--muted); font-size: 11px; }
 .pool-legend span { display: inline-flex; align-items: center; gap: 7px; }
 .pool-legend i { width: 9px; height: 9px; border-radius: 2px; }
+.last-block-miner { display: flex; align-items: baseline; gap: 8px; margin: 18px 18px 0; padding-top: 15px; border-top: 1px solid var(--border-soft); }
+.last-block-miner span { color: var(--muted); font-size: 11px; }
+.last-block-miner strong { color: var(--gold-soft); font-size: 13px; font-weight: 620; }
+.last-block-miner small { margin-left: auto; color: var(--faint); font-size: 10px; font-variant-numeric: tabular-nums; }
 .pool-table-panel { margin-top: 14px; }
 
 .two-column { display: grid; grid-template-columns: minmax(0,1.55fr) minmax(280px,.75fr); gap: 14px; margin-top: 14px; }
