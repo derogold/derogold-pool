@@ -269,13 +269,14 @@
   function renderPoolTrends() {
     var charts = state.stats.charts || {}
     var trends = [
-      { key: 'difficulty', title: 'Difficulty' },
-      { key: 'hashrate', title: 'Pool Hashrate' },
-      { key: 'workers', title: 'Miners' }
+      { key: 'difficulty', title: 'Difficulty', points: chartPoints(charts.difficulty) },
+      { key: 'hashrate', title: 'Pool Hashrate', points: chartPoints(charts.hashrate) },
+      { key: 'workers', title: 'Miners', points: chartPoints(charts.workers) },
+      { key: 'network-share', title: 'Network Share', points: networkSharePoints(charts) }
     ]
 
     $('poolTrendGrid').innerHTML = trends.map(function (trend) {
-      var points = chartPoints(charts[trend.key])
+      var points = trend.points
       return '<section class="trend-card">' +
         '<div class="trend-header">' +
           '<div><h3>' + escapeHtml(trend.title) + '</h3><span>' + escapeHtml(chartPeriodLabel(points)) + '</span></div>' +
@@ -287,7 +288,28 @@
     }).join('')
 
     trends.forEach(function (trend) {
-      drawTrendChart(document.querySelector('[data-chart-key="' + trend.key + '"]'), chartPoints(charts[trend.key]))
+      drawTrendChart(document.querySelector('[data-chart-key="' + trend.key + '"]'), trend.points)
+    })
+  }
+
+  function networkSharePoints(charts) {
+    var poolPoints = chartPoints(charts.hashrate)
+    var difficultyPoints = chartPoints(charts.difficulty)
+    var target = Number(state.stats && state.stats.config && state.stats.config.coinDifficultyTarget) || 300
+    if (!poolPoints.length || !difficultyPoints.length || !target) return []
+
+    var difficultyIndex = 0
+    return poolPoints.map(function (point) {
+      while (difficultyIndex + 1 < difficultyPoints.length && difficultyPoints[difficultyIndex + 1].time <= point.time) {
+        difficultyIndex++
+      }
+      var networkHashrate = difficultyPoints[difficultyIndex].value / target
+      return {
+        time: point.time,
+        value: networkHashrate > 0 ? (point.value / networkHashrate) * 100 : 0
+      }
+    }).filter(function (point) {
+      return isFinite(point.value) && point.value >= 0
     })
   }
 
