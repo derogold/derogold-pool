@@ -314,6 +314,8 @@
       miners: parent && parent.pool && parent.pool.miners,
       height: parent && parent.network && parent.network.height,
       updated: parent && parent.network && parent.network.timestamp,
+      lastBlockHeight: parent && parent.blocks && parent.blocks.latest && parent.blocks.latest[0] && parent.blocks.latest[0].height,
+      lastBlockHash: parent && parent.blocks && parent.blocks.latest && parent.blocks.latest[0] && parent.blocks.latest[0].hash,
       homepage: window.location.origin,
       status: 'live'
     }].concat(state.publicPools)
@@ -335,6 +337,14 @@
     setText('publicKnownHashrate', formatHashrate(Math.min(knownHashrate, networkHashrate)))
     setText('publicUnknownHashrate', formatHashrate(unknownHashrate))
     setText('publicPoolCount', String(knownPools.length))
+    var networkHeight = parent && parent.network && Number(parent.network.height)
+    var networkHash = parent && parent.network && parent.network.hash
+    var lastBlockPool = knownPools.find(function (pool) {
+      return (networkHash && pool.lastBlockHash === networkHash) ||
+        (networkHeight && Number(pool.lastBlockHeight) === networkHeight)
+    })
+    setText('lastBlockMiner', lastBlockPool ? lastBlockPool.name : 'Private / unknown')
+    setText('lastBlockHeight', networkHeight ? 'Block ' + formatNumber(networkHeight) : '-')
 
     $('poolDistribution').innerHTML = rows.map(function (pool, index) {
       var share = networkHashrate > 0 ? Math.max(0, (Number(pool.hashrate) || 0) / networkHashrate * 100) : 0
@@ -811,6 +821,12 @@
           return response.json()
         })
         .then(function (data) {
+          var latestBlock = data.pool && Array.isArray(data.pool.blocks) && data.pool.blocks.length > 1
+            ? {
+                hash: String(data.pool.blocks[0] || '').split(':')[0],
+                height: Number(data.pool.blocks[1])
+              }
+            : {}
           return {
             name: source.name,
             homepage: source.homepage,
@@ -818,6 +834,8 @@
             miners: data.pool && data.pool.miners,
             height: data.network && data.network.height,
             updated: data.network && data.network.timestamp,
+            lastBlockHeight: latestBlock.height,
+            lastBlockHash: latestBlock.hash,
             status: 'live'
           }
         })
