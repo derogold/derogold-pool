@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.astro/
+*.png
+public/config.local.js

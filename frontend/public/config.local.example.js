@@ -1,0 +1,26 @@
+// Optional local dashboard override. Save as website/config.local.js for
+// machine-specific preview/deployment values; that file is gitignored.
+var api = 'https://api.derogold.online/apimine'
+var api_blockexplorer = 'https://api.derogold.online/apimine'
+var poolHost = 'your-pool.derogold.online'
+var stratumHost = 'mining.your-pool.derogold.online'
+var blockchainExplorer = 'https://your-derogold-explorer.example.com/block/{id}'
+var transactionExplorer = 'https://your-derogold-explorer.example.com/tx/{id}'
+var childExplorers = {
+  WRKZ: {
+    block: 'https://your-wrkz-explorer.example.com/#/block/{id}',
+    tx: 'https://your-wrkz-explorer.example.com/#/tx/{id}'
+  }
+}
+var childCoinUnits = {
+  WRKZ: 100
+}
+
+window.poolDashboardConfig = {
+  apiBase: api,
+  stratumHost: stratumHost,
+  blockchainExplorer: blockchainExplorer,
+  transactionExplorer: transactionExplorer,
+  childExplorers: childExplorers,
+  childCoinUnits: childCoinUnits
+}
