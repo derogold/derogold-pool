@@ -97,6 +97,23 @@ button { cursor: pointer; }
 .trend-chart { width: 100%; height: 92px; margin-top: 7px; }
 .trend-empty { display: grid; place-items: center; height: 88px; color: var(--faint); font-size: 11px; }
 
+.pool-summary-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; margin-bottom: 14px; }
+.pool-summary { padding: 17px 18px; border: 1px solid var(--border-soft); border-radius: var(--radius); background: var(--surface); }
+.pool-summary span { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .045em; }
+.pool-summary strong { display: block; margin-top: 5px; font-size: 18px; font-weight: 620; font-variant-numeric: tabular-nums; letter-spacing: -.025em; }
+.pool-summary:nth-child(2) strong { color: var(--gold-soft); }
+.pool-distribution-panel { padding-bottom: 18px; }
+.pool-distribution-panel .panel-header span, .pool-table-panel .panel-header span { color: var(--faint); font-size: 10px; }
+.pool-distribution { display: flex; height: 22px; margin: 22px 18px 14px; overflow: hidden; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-3); }
+.pool-segment { display: block; min-width: 2px; transition: width 200ms ease; }
+.pool-segment-0 { background: var(--gold); }
+.pool-segment-1 { background: var(--blue); }
+.pool-segment-2 { background: #5c5b55; }
+.pool-legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 0 18px; color: var(--muted); font-size: 11px; }
+.pool-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.pool-legend i { width: 9px; height: 9px; border-radius: 2px; }
+.pool-table-panel { margin-top: 14px; }
+
 .two-column { display: grid; grid-template-columns: minmax(0,1.55fr) minmax(280px,.75fr); gap: 14px; margin-top: 14px; }
 .panel { min-width: 0; border: 1px solid var(--border-soft); border-radius: var(--radius); background: var(--surface); }
 .panel-header { min-height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 18px; border-bottom: 1px solid var(--border-soft); }
@@ -166,6 +183,7 @@ input:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(213,169,40,.
   .metric-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .two-column { grid-template-columns: 1fr; }
   .balance-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+  .pool-summary-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 
 @media (max-width: 760px) {
@@ -196,6 +214,7 @@ input:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(213,169,40,.
   .command-card-link { grid-column: auto; }
   .input-row { align-items: stretch; flex-direction: column; }
   .input-row .button { width: 100%; }
+  .pool-distribution-panel .panel-header span, .pool-table-panel .panel-header span { display: none; }
 }
 
 @media (max-width: 480px) {
